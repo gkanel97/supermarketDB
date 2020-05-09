@@ -5,6 +5,36 @@ import csv
 import random
 import datetime
 
+# Global data parameters
+
+product_data = 'product_data.txt'
+prod_availability = [[0.8, 0.85, 0.7, 0.6], [0.6, 0.75, 0.98], [0.85, 0.6], 1]
+
+street_data = ['Athens_streets.txt', 'Thessaloniki_streets.txt', 'Volos_streets.txt']
+cities = ['Athens', 'Thessaloniki', 'Volos']
+city_weights = [5, 3, 2]
+postal_codes = [range(11850,11860), range(54620,54625), range(38222,38225)]
+
+aisles = 5
+shelves = 3
+online_store = 10
+stores_by_loc = [[1,2,3,4],[5,6,7],[8,9]]
+working_hours = [*[[8,21]]*5, [9,20]]
+working_hours_str = ['Mon-Fri: 08-21, Sat: 09-20, Sun: CLOSED', 'Mon-Sun: OPEN 24h']
+area = [[400, 500, 320, 250], [240, 350, 1000], [500, 250], 'NULL']
+
+first_reg_date = datetime.date(2019,1,1)
+last_reg_date = datetime.date(2020,5,1)
+first_birth_date = datetime.date(1945,1,1)
+last_birth_date = datetime.date(2000,1,1)
+first_price_date = datetime.date(2019,1,2)
+last_price_date = datetime.date(2020,6,1)
+max_price_changes = 10
+
+reg_customers = 200
+unreg_customers = 100
+
+
 # Import product data from product_data.txt
 # Products beloging to different categories are separated by an empty line 
 # and a line '===== {Category_name} ====='
@@ -17,7 +47,7 @@ while True:
     product_category = []
 
     cat = 0
-    fp = open('product_data.txt', 'r')
+    fp = open(product_data, 'r')
     line = fp.readline()
     while line:
         if line != '\n':
@@ -37,32 +67,20 @@ while True:
         break
 
 
-# Read street names from txt files and save them in arrays
+# Read street names from txt files and save them in a dictionary
+city_dict = {}
 
-ath_streets = []
-thes_streets = []
-vol_streets = []
-
-with open('Athens_streets.txt','r') as ath, open('Thessaloniki_streets.txt','r') as thes, open('Volos_streets.txt',
-                                                                                               'r') as vol:
-
-    line = ath.readline()
-    while(line):
-        if line:
-            ath_streets.append(line.replace(' \n',''))
-        line = ath.readline()
-        
-    line = thes.readline()
-    while(line):
-        if line:
-            thes_streets.append(line.replace(' \n',''))
-        line = thes.readline()
-        
-    line = vol.readline()
-    while(line):
-        if line:
-            vol_streets.append(line.replace('\n',''))
-        line = vol.readline()
+for street_file,city,ps in zip(street_data, cities, postal_codes):
+    
+    city_dict[city] = {}
+    with open(street_file,'r') as f:
+        city_dict[city]['Streets'] = []
+        line = f.readline()
+        while(line):
+            if line:
+                city_dict[city]['Streets'].append(line.replace(' \n',''))
+            line = f.readline()
+        city_dict[city]['Postal_codes'] = ps
 
 
 def generate_random_datetime(start_datetime, end_datetime):
@@ -103,18 +121,18 @@ def generate_random_sorted_dates(start_date, end_date, count):
 
 def generate_random_working_datetime(date, store):
     
-    if store == 10:
+    if store == online_store:
         time = datetime.time(hour = random.randrange(0,23), minute = random.randrange(0,60), 
                              second = random.randrange(0,60))
     else:
-        if date.weekday() < 5:
-            time = datetime.time(hour = random.randrange(8,20), minute = random.randrange(0,60), 
-                                 second = random.randrange(0,60))
-        elif date.weekday() < 6:
-            time = datetime.time(hour = random.randrange(9,19), minute = random.randrange(0,60), 
+        day = date.weekday()
+        if day < len(working_hours):
+            opening = working_hours[day][0]
+            closing = working_hours[day][1]
+            time = datetime.time(hour = random.randrange(opening,closing-1), minute = random.randrange(0,60), 
                                  second = random.randrange(0,60))
         else:
-            return False
+            raise ValueError('The chosen store is closed at the given date')
    
     return datetime.datetime.combine(date, time)
 
@@ -139,7 +157,8 @@ def get_current_price(price_info_dict, shop_date):
                 return pr
             elif ed > shop_date:
                 return pr
-    return False
+            
+    raise ValueError('The product had no valid price at the given date')
 
 
 # Choose the next store and shooping according to the shopping profile of each customer
@@ -156,11 +175,11 @@ def get_next_date_store(previous_date, freq, store_pool, store_weight):
         # Online store is open every weekday and transactions can be performed
         # Physical stores are closed on Sundays (weekday 6)
 
-        if chosen_store == 10:           # Accept every new date
+        if chosen_store == online_store:                 # Accept every new date
             shop_date = new_date
             return shop_date, chosen_store
         else:
-            if new_date.weekday() < 6:   # Accept all weekdays except Sunday
+            if new_date.weekday() < len(working_hours):   # Accept all weekdays except Sunday
                 shop_date = new_date
                 return shop_date, chosen_store
 
@@ -230,30 +249,32 @@ def generate_prod_weights(shop_profile, pet, all_barcodes, barcodes_in_store):
 
 def generate_store_preference(store_profile):
     
-    stores = [[1,2,3,4],[5,6,7],[8,9]]
+    stores = 0
+    for sub_arr in stores_by_loc:
+        stores += len(sub_arr)
     
     if store_profile < 0.55:     # Customer shops from only one physical store
-        store_pref = [random.randint(1,9)]
+        store_pref = [random.randint(stores_by_loc[0][0],stores_by_loc[-1][-1])]
         store_prob = [1]
 
     elif store_profile < 0.7:   # Customer shops from one physical store and online
-        store_pref = [random.randint(1,9), 10]
+        store_pref = [random.randint(stores_by_loc[0][0],stores_by_loc[-1][-1]), online_store]
         rand = random.uniform(0.7,0.95)
         store_prob = [rand, 1-rand]
 
     elif store_profile < 0.8:  # Customer shops from 2 physical stores
-        store_pref = random.sample(stores[random.randint(0,2)], k = 2)
+        store_pref = random.sample(stores_by_loc[random.randint(0,len(stores_by_loc)-1)], k = 2)
         rand = random.uniform(0.7,0.95)
         store_prob = [rand, 1-rand]
 
     elif store_profile < 0.9:  # Customer shops from 2 physical stores + online
-        store_pref = [*random.sample(stores[random.randint(0,2)], k = 2), 10]
+        store_pref = [*random.sample(stores_by_loc[random.randint(0,len(stores_by_loc)-1)], k = 2), online_store]
         rand_1 = random.uniform(0.6, 0.8)
         rand_2 = random.uniform(0.05, 0.15)
         store_prob = [rand_1, rand_2, 1 - rand_1 - rand_2]
 
     else:                       # Customer shops only online
-        store_pref = [10]
+        store_pref = [online_store]
         store_prob = [1]
 
     return store_pref, store_prob
@@ -262,37 +283,30 @@ def generate_store_preference(store_profile):
 def generate_random_address(city):
     
     address_dict = {}
-    
-    # Assume 20 postal codes in Athens, 10 in Thessaloniki and 5 in Volos
-    if (city == 'Athens'):
-        streets = ath_streets
-        address_dict['Postal_code'] = random.randint(11850,11870)
-    elif (city == 'Thessaloniki'):
-        streets = thes_streets
-        address_dict['Postal_code'] = random.randint(54620,54630)
-    elif (city == 'Volos'):
-        streets = vol_streets
-        address_dict['Postal_code'] = random.randint(38220,38225)
-    else:
-        return False
-    
-    address_dict['Street'] = random.choice(streets)
+    address_dict['Street'] = random.choice(city_dict[city]['Streets'])
     address_dict['Number'] = random.randint(1,200)
+    address_dict['Postal_code'] = random.choice(city_dict[city]['Postal_codes'])
     address_dict['City'] = city
     
     return address_dict
 
 
-# Store information
+# Save store information in a dictionary
 
-store_id = range(1,11)
-area = [400, 500, 320, 250, 240, 350, 1000, 500, 250, 'NULL']
-city = [*['Athens']*4, *['Thessaloniki']*3, *['Volos']*2]
-address = []
-for c in city:
-    address.append(generate_random_address(c))
-address.append(address[0])
-opening_hours = [*['Mon-Fri: 08-21, Sat: 09-20, Sun: CLOSED']*9, 'Mon-Sun: OPEN 24h']
+# Add information for physical stores
+store_dict = {}
+for store_team, area_team, city in zip(stores_by_loc, area, cities):
+    for s,a in zip(store_team, area_team):
+        store_dict[s] = {}
+        store_dict[s]['Area'] = a
+        store_dict[s]['Opening_hours'] = working_hours_str[0]
+        store_dict[s]['Address'] = generate_random_address(city)
+
+# Add information for the online store, assuming it is co-located with the first store
+store_dict[online_store] = {}
+store_dict[online_store]['Area'] = 'NULL'
+store_dict[online_store]['Opening_hours'] = working_hours_str[1]
+store_dict[online_store]['Address'] = store_dict[stores_by_loc[0][0]]['Address']
 
 
 # Information for the price history of a product
@@ -300,13 +314,14 @@ opening_hours = [*['Mon-Fri: 08-21, Sat: 09-20, Sun: CLOSED']*9, 'Mon-Sun: OPEN 
 price_hist_dict = {
     b: {
         'Price':[p], 
-        'Start_date':[datetime.date(2019, 1, 1)],
+        'Start_date':[first_reg_date],
         'End_date':[]
     } for b,p in zip(product_barcode, product_price)
 }
 
 for key, val in price_hist_dict.items():
-    price_change_dates = generate_random_sorted_dates(datetime.date(2019,1,2),datetime.date(2020,6,1),10)
+    price_change_dates = generate_random_sorted_dates(first_price_date,last_price_date,
+                                                      random.randint(0,max_price_changes))
     price_hist = generate_price_history(val['Price'][0], len(price_change_dates))
     price_hist_dict[key]['Price'] = price_hist
     price_hist_dict[key]['Start_date'] += price_change_dates
@@ -315,19 +330,18 @@ for key, val in price_hist_dict.items():
 
 # Generate pseudo-random information for 200 different customers and save them to a dictionary
 
-customers = 200
 while True:
-    card_id = [random.randint(10**7, 10**8) for i in range(customers)]
+    card_id = [random.randint(10**7, 10**8) for i in range(reg_customers)]
     if len(card_id) == len(list(set(card_id))):
         break
     
-customer_name = ['Customer-{}'.format(i) for i in range(customers)]
-customer_sex = ['M' if random.random() < 0.5 else 'F' for i in range(customers)]
-reg_date = [generate_random_datetime(datetime.date(2019,1,1), datetime.date(2020,5,1)) for i in range(customers)]
-customer_dob=[generate_random_datetime(datetime.date(1945,1,1),datetime.date(2000,1,1)) for i in range(customers)]
+customer_name = ['Customer-{}'.format(i) for i in range(reg_customers)]
+customer_sex = ['M' if random.random() < 0.5 else 'F' for i in range(reg_customers)]
+reg_date = [generate_random_datetime(first_reg_date, last_reg_date) for i in range(reg_customers)]
+customer_dob=[generate_random_datetime(first_birth_date,last_birth_date) for i in range(reg_customers)]
 
 pet = []
-for i in range(customers):
+for i in range(reg_customers):
     rand = random.random()
     if rand < 0.2:
         pet.append('dog')
@@ -337,7 +351,7 @@ for i in range(customers):
         pet.append('parrot')
     else:
         pet.append('NULL')
-
+        
 customer_dict = {
     card: {
         'Name': n,
@@ -346,38 +360,25 @@ customer_dict = {
         'Registration_date': d,
         'Pet': p,
         'DoB': dob,
-    } for (card,n,s,d,p,dob) in zip(card_id, 
-                                      customer_name, 
-                                      customer_sex, 
-                                      reg_date, pet, 
-                                      customer_dob
-                                     )
+    } for (card,n,s,d,p,dob) in zip(card_id, customer_name, customer_sex, reg_date, pet, customer_dob)
 }
 
 
-# Determine how many products are available in each store according to availability array
-# and where that are stored (aisle and shelf)
-
-prod_availability = [0.8, 0.85, 0.7, 0.6, 0.6, 0.75, 0.98, 0.85, 0.6, 1]
-store_products = [int(x*len(product_barcode)) for x in prod_availability]
-
-offers_dict = {
-    s: {} for s in range(1,11)
-}
-
-# Assume 6 aisles at each store and 3 shelves for each aisle
-# Online store (store_id == 10) has no physical positions
-for i in range(1,10):
-    for b in random.sample(product_barcode, store_products[i-1]):
-        offers_dict[i][b] = {
-            'Aisle': random.randint(1,6),
-            'Shelf': random.randint(1,3)
-        }
-        
-for b in random.sample(product_barcode, store_products[9]):
-    offers_dict[10][b] = {
+offers_dict = {}
+for store_team, avail_team in zip(stores_by_loc, prod_availability):
+    for s,av in zip(store_team, avail_team):
+        offers_dict[s] = {}
+        for b in random.sample(product_barcode, int(len(product_barcode)*av)):
+            offers_dict[s][b] = {
+                'Aisle': random.randint(1,aisles),
+                'Shelf': random.randint(1,shelves)
+            }
+            
+offers_dict[online_store] = {}
+for b in random.sample(product_barcode, int(len(product_barcode)*prod_availability[-1])):
+    offers_dict[online_store][b] = {
         'Aisle': 'NULL',
-        'Shelf': 'NULL',
+        'Shelf': 'NULL'
     }
 
 
@@ -387,7 +388,7 @@ for b in random.sample(product_barcode, store_products[9]):
 # and the price at the transaction date 
 
 transaction_dict = {}
-for i in range(customers):
+for i in range(reg_customers):
     
     shop_freq = random.randint(2,8)
     average_items = random.randint(5,20)
@@ -399,9 +400,9 @@ for i in range(customers):
     store_pref, store_prob = generate_store_preference(random.random())
     points = 0 # 1 point is given for 3 euros spent (no rewards are assumed)
 
-    # Start from registration date (or the next few days) and until 2020-6-1
+    # Start from registration date (or the next few days) and until last_price_date
     shop_date, chosen_store = get_next_date_store(reg_date, 0, store_pref, store_prob)
-    while shop_date < datetime.date(2020,6,1):
+    while shop_date < last_price_date:
 
         transaction_id = random.randint(10**12, 10**13)
         payment_method = 'cash' if random.random() < payment_profile else 'credit_card'
@@ -442,24 +443,24 @@ for i in range(customers):
     elif store_pref[0] < 10:
         customer_dict[customer_id]['Address'] = generate_random_address('Volos')
     else:
-        customer_dict[customer_id]['Address'] = generate_random_address(random.choices(['Athens', 'Thessaloniki', 'Volos'], weights = [5, 3, 2], k = 1)[0])
+        customer_dict[customer_id]['Address'] = generate_random_address(random.choices(['Athens','Thessaloniki','Volos'],weights = [5, 3, 2],k = 1)[0])
 
 
 # Repeat the previous procedure, but assume that the customers are not registered and have no personal card
 # As a result no customer information can be kept
 # Assume that they have similar habits with registered customers
 
-for i in range(customers//2):
+for i in range(unreg_customers):
     
     shop_freq = random.randint(2,8)
     average_items = random.randint(5,20)
-    reg_date = datetime.date(2019,1,1)
+    reg_date = first_reg_date
     pet = customer_dict[card_id[i]]['Pet']
     shop_profile = random.random()
     store_pref, store_prob = generate_store_preference(random.random())
 
     shop_date, chosen_store = get_next_date_store(reg_date, 0, store_pref, store_prob)
-    while shop_date < datetime.date(2020,6,1):
+    while shop_date < last_price_date:
 
         transaction_id = random.randint(10**12, 10**13)
         payment_method = 'cash' if random.random() < 0.4 else 'credit_card'
@@ -493,8 +494,9 @@ for i in range(customers//2):
 with open('csv_files/store.csv','w') as store_csv:
     store_writer = csv.writer(store_csv, delimiter=',', quotechar='"')
     store_writer.writerow(['store_id','area','street_name','street_number','postal_code','city','opening_hours'])
-    for sid,a,addr,op in zip(store_id,area,address,opening_hours):       
-        store_writer.writerow([sid, a, addr['Street'], addr['Number'], addr['Postal_code'], addr['City'], op])
+    for key,val in store_dict.items():
+        store_writer.writerow([key, val['Area'], val['Address']['Street'], val['Address']['Number'],
+                               val['Address']['Postal_code'], val['Address']['City'], val['Opening_hours']])
 
 with open('csv_files/product.csv', 'w') as data_csv:
     data_writer = csv.writer(data_csv, delimiter=',', quotechar='"')
