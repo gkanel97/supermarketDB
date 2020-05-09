@@ -36,35 +36,31 @@ unreg_customers = 100
 
 
 # Import product data from product_data.txt
-# Products beloging to different categories are separated by an empty line 
+# Products belonging to different categories are separated by an empty line 
 # and a line '===== {Category_name} ====='
-
-while True:
     
-    product_name = []
-    product_price = []
-    product_barcode = []
-    product_category = []
+product_name = []
+product_price = []
+product_category = []
 
-    cat = 0
-    fp = open(product_data, 'r')
+cat = 0
+fp = open(product_data, 'r')
+line = fp.readline()
+while line:
+    if line != '\n':
+        tokens = line.split(',')
+        if (tokens[0][0] != '='):
+            product_category.append(cat)
+            product_name.append(tokens[0])
+            product_price.append(float(tokens[1]))
+        else:
+            cat += 1
     line = fp.readline()
-    while line:
-        if line != '\n':
-            tokens = line.split(',')
-            if (tokens[0][0] != '='):
-                product_category.append(cat)
-                product_name.append(tokens[0])
-                product_price.append(float(tokens[1]))
-                product_barcode.append(random.randint(10**12, 10**13))
-            else:
-                cat += 1
-        line = fp.readline()
-    fp.close()
-    
-    # Make sure that the barcodes are unique, else repeat
-    if len(product_barcode) == len(list(set(product_barcode))):
-        break
+fp.close()
+
+# random.sample returns unique elements
+# barcodes need to be sorted so that product weights remain valid
+product_barcode = sorted(random.sample(range(10**12,10**13),len(product_name)))
 
 
 # Read street names from txt files and save them in a dictionary
@@ -328,7 +324,7 @@ for key, val in price_hist_dict.items():
     price_hist_dict[key]['End_date'] = price_change_dates + ['NULL']
 
 
-# Generate pseudo-random information for 200 different customers and save them to a dictionary
+# Generate pseudo-random information for many customers and save them to a dictionary
 
 while True:
     card_id = [random.randint(10**7, 10**8) for i in range(reg_customers)]
@@ -360,7 +356,12 @@ customer_dict = {
         'Registration_date': d,
         'Pet': p,
         'DoB': dob,
-    } for (card,n,s,d,p,dob) in zip(card_id, customer_name, customer_sex, reg_date, pet, customer_dob)
+    } for (card,n,s,d,p,dob) in zip(card_id, 
+                                      customer_name, 
+                                      customer_sex, 
+                                      reg_date, pet, 
+                                      customer_dob
+                                     )
 }
 
 
@@ -398,7 +399,7 @@ for i in range(reg_customers):
     shop_profile = random.random()
     payment_profile = random.random()
     store_pref, store_prob = generate_store_preference(random.random())
-    points = 0 # 1 point is given for 3 euros spent (no rewards are assumed)
+    points = 0        # 1 point is given for 3 euros spent (no rewards are assumed)
 
     # Start from registration date (or the next few days) and until last_price_date
     shop_date, chosen_store = get_next_date_store(reg_date, 0, store_pref, store_prob)
@@ -406,7 +407,7 @@ for i in range(reg_customers):
 
         transaction_id = random.randint(10**12, 10**13)
         payment_method = 'cash' if random.random() < payment_profile else 'credit_card'
-        barcode_in_store = list(offers_dict[chosen_store].keys())
+        barcode_in_store = sorted(list(offers_dict[chosen_store].keys()))
         barcode_weight = generate_prod_weights(shop_profile, pet, product_barcode, barcode_in_store)
         shopped_prod = generate_items(barcode_in_store, average_items, price_hist_dict, shop_date, barcode_weight)
 
@@ -443,8 +444,9 @@ for i in range(reg_customers):
     elif store_pref[0] < 10:
         customer_dict[customer_id]['Address'] = generate_random_address('Volos')
     else:
-        customer_dict[customer_id]['Address'] = generate_random_address(random.choices(['Athens','Thessaloniki','Volos'],weights = [5, 3, 2],k = 1)[0])
-
+        customer_dict[customer_id]['Address'] = generate_random_address(random.choices(['Athens','Thessaloniki','Volos'], 
+                                                                                       weights = [5, 3, 2], 
+                                                                                       k = 1)[0])
 
 # Repeat the previous procedure, but assume that the customers are not registered and have no personal card
 # As a result no customer information can be kept
@@ -464,10 +466,10 @@ for i in range(unreg_customers):
 
         transaction_id = random.randint(10**12, 10**13)
         payment_method = 'cash' if random.random() < 0.4 else 'credit_card'
-        barcode_in_store = list(offers_dict[chosen_store].keys())
+        barcode_in_store = sorted(list(offers_dict[chosen_store].keys()))
         barcode_weight = generate_prod_weights(shop_profile, pet, product_barcode, barcode_in_store)
         shopped_prod = generate_items(barcode_in_store, average_items, price_hist_dict, shop_date, barcode_weight)
-
+        
         amount = 0
         quantity = []
         for key,val in shopped_prod.items():
