@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Search for information in the database</h2>
+<h3>Select database table to present</h3>
+
+<div>
+<form method="POST" action="/select">
+    <select id="table_dropdown" name="select_table">
+        <option value="" selected disabled hidden>Select a table</option>
+        {% for t in table_names %}
+            {% if t == selected_table %}
+                <option value="{{ t }}" selected>{{ t }}</option>
+            {% else %}
+                <option value="{{ t }}">{{ t }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <input class="btn" type="submit" value="Select"><br><br>
+</form>
+</div>
+
+<div>
+{% if selected_table == 'Store' %}
+<form method="POST" action="/presentation">
+    <input type="hidden" name="select_table" value="Store">
+    <label for="store_dropdown">Select a specific store</label>
+    <select id="store_dropdown" name="select_store">
+        <option value="" selected disabled hidden>Select store</option>
+        {% for s in store_names %}
+            <option value="{{ s }}">{{ s }}</option> 
+        {% endfor %}
+    </select><br>
+    <label for="city_dropdown">Filter by location</label>
+    <select id="city_dropdown" name="select_city">
+       <option value="" selected disabled hidden>Select a city</option>
+       <option value="Athens">Athens</option>
+       <option value="Thessaloniki">Thessaloniki</option>
+       <option value="Volos">Volos</option>
+    </select><br><br>
+    <input class="btn" type="submit" value="Search">
+</form>
+{% endif %}
+
+{% if selected_table == 'Transaction' %}
+<form method="POST" action="/presentation">
+    <input type="hidden" name="select_table" value="Transaction">
+    <label for="transaction_id_field">Insert the transaction ID</label>
+    <input type="text" id="transaction_id_field" name="transaction_id" minlength="13" maxlength="13">
+    <h4>Apply filters</h4>
+    <select id="store_dropdown" name="select_store">
+        <option value="" selected disabled hidden>Select store</option>
+        {% for s in store_names %}
+            <option value="{{ s }}">{{ s }}</option> 
+        {% endfor %}
+    </select><br>
+    <select id="payment_dropdown" name="payment_method">
+        <option value="" selected disabled hidden>Select payment method</option>
+        <option value="cash">Cash</option>
+        <option value="credit_card">Credit card</option>
+    </select><br>
+    <label for="date_calender">Transaction date</label>
+    <input type="date" id="date_calender" name="shop_date" value="2019-01-01" min="2019-01-01" max="2020-05-31"><br>
+    <label for="quantity_field">Total amount of pieces</label>
+    <input type="text" id="quantity_field" name="total_quantity"><br><br>
+    <input class="btn" type="submit" value="Search">
+</form>
+{% endif %}
+
+{% if selected_table == 'Product' %}
+<form method="POST" action="/presentation">
+    <input type="hidden" name="select_table" value="Product">
+    <label for="barcode_field">Insert barcode</label> 
+    <input type="text" id="barcode_field" name="barcode" minlength="13" maxlength="13"><br>
+    <label for="category_dropdown">Select by category</label>
+    <select id="category_dropdown" name="select_category">
+        <option value="" selected disabled hidden>Select product category</option>
+        {% for c in category_names %}
+            <option value="{{ c }}">{{ c }}</option> 
+        {% endfor %}
+    </select><br><br>
+    <input class="btn" type="submit" value="Search">
+</form>
+{% endif %}
+
+{% if selected_table == 'Customer' %}
+<form method="POST" action="/presentation">
+    <input type="hidden" name="select_table" value="Customer">
+    <label for="card_field">Insert card ID</label>
+    <input type="text" id="card_field" name="card_id" minlength="8" maxlength="8">
+    <h4>Apply filters</h4>
+    <label for="reg_date_calender">Registration date</label>
+    <input type="date" id="reg_date_calender" name="reg_date" value="2019-01-01" min="2019-01-01" max="2020-04-30"><br>
+    <label for="pet_dropdown">Pet</label>
+    <select id="pet_dropdown" name="select_pet">
+        <option value="" selected disabled hidden>Select a pet</option>
+        <option value="Dog">Dog</option>
+        <option value="Cat">Cat</option>
+        <option value="Parrot">Parrot</option>
+        <option value="NULL">None</option>
+    </select><br><br>
+    <input class="btn" type="submit" value="Search">
+</form>
+{% endif %}
+
+</div>
