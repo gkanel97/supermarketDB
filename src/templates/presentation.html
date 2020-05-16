@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: sans-serif;
+  border-collapse: collapse;
+  table-layout: auto
+  width: 90%;
+}
+
+td {
+  border: 1px solid black;
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  border: 1px solid black;
+  text-align: center;  
+  padding: 8px;
+  background-color: #dddddd;
+}
+</style>
+</head>
+    <body>
+        <h3> Database query results </h3>
+        <table>
+            <tr>
+                {% for header in data[0] %} 
+                    <th> {{ header }} </th>
+                {% endfor %}
+            </tr>
+            {% for row in data[1] %}
+                <tr>
+                    {% for cell in row %}
+                        <td> {{ cell }} </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %} 
+        </table> 
+    </body>
+</html>
