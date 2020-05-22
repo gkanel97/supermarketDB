@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: sans-serif;
+  border-collapse: collapse;
+  table-layout: auto
+  width: 90%;
+}
+
+td {
+  border: 1px solid black;
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  border: 1px solid black;
+  text-align: center;
+  padding: 8px;
+  background-color: #dddddd;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Show statistics for a specific customer</h2>
+<h3>Select a customer</h3>
+
+<div>
+<form method="POST" action="/customer-stats">
+    <label for="card_id">Insert customer card ID:</label>
+    <input type="text" id="card_id" name="insert_card"><br>
+    <label for="customer_name">Alternatively insert customer name:</label>
+    <input type="text" id="customer_name" name="insert_name">
+    <input type="submit" value="Show statistics">
+</form>
+</div>
+
+{% if customer != None and data == None %}
+<div>
+    {% if customer['name'] != None %}
+        <h4>There is no registered customer with name "{{ customer['name'] }}"</h4>
+    {% elif customer['card_id'] != None %}
+        <h4>There is no registered customer with card ID = {{ customer['card_id'] }}</h4>
+    {% endif %}
+</div>
+
+{% elif customer != None and data != None %}
+
+    <div><h3>Showing statistics for customer "{{ customer['name'] }}" with card ID = {{ customer['card_id'] }}</h3></div>
+    <div><h4>Stores the customer shops from</h4>
+    <table>
+        <tr>
+            {% for header in data['stores']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['stores']['table'] %}
+            <tr>
+            {% for cell in row %}
+                <td> {{ cell }} </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </table></div>
+
+    <div><h4>Top 10 favorite products</h4>
+    <table>
+        <tr>
+            {% for header in data['fav_prod']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['fav_prod']['table'] %}
+            <tr>
+            {% for cell in row %}
+                <td> {{ cell }} </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </table></div>
+
+{% endif %}
+
+</body>
