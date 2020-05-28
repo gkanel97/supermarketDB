@@ -2,13 +2,144 @@ import mysql.connector
 from mysql.connector import Error
 import connect_to_db
 import query
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request 
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
     return "<h2 style='color:green'>Database presentation homepage</h2>"
+
+@app.route("/modify-tables", methods = ['GET', 'POST'])
+def modify():
+
+    if request.method == 'GET':
+        return render_template("modify_tables.html", selected_action = None, selected_table = None, data = None)
+
+    if request.method == 'POST':
+        
+        selected_t = request.form.get("select_table")
+        selected_a = request.form.get("select_action")
+        if not selected_t or not selected_a:
+            print("Table or action not selected")
+            return render_template("modify_tables.html", selected_table = None, selected_action = None, data = None)
+    
+        step = request.form.get("form_step")
+        print("step = ", step)
+        if step == 'one':
+            return render_template("modify_tables.html", selected_table = selected_t, selected_action = selected_a, data = None)
+
+        print("In step 2")
+        if selected_a == 'modify':
+            if selected_t == 'Customer':
+                selected_card = request.form.get("insert_card")
+                return "<h3>Selected card ID = {}</h3>".format(selected_card)
+            elif selected_t == 'Product':
+                selected_barcode = request.form.get("insert_barcode")
+                return "<h3>Selected barcode = {}</h3>".format(selected_barcode)
+            elif selected_t == 'Store':
+                selected_store = request.form.get("insert_store_id")
+                return "<h3>Selected store ID = {}</h3>".format(selected_store)
+
+        if selected_a == 'delete':
+            if selected_t == 'Customer':
+                selected_card = request.form.get("insert_card")
+                return "<h3>Selected card ID = {}</h3>".format(selected_card)
+            elif selected_t == 'Product':
+                selected_barcode = request.form.get("insert_barcode")
+                return "<h3>Selected barcode = {}</h3>".format(selected_barcode)
+            elif selected_t == 'Store':
+                selected_store = request.form.get("insert_store_id")
+                return "<h3>Selected store ID = {}</h3>".format(selected_store)
+
+        return render_template("modify_tables.html", selected_table = None, selected_action = None, data = None)
+
+@app.route("/price-history", methods = ['GET', 'POST'])
+def price_history():
+
+    if request.method == 'GET':
+        return render_template("price_history.html", data = None)
+
+    if request.method == 'POST':
+       
+        selected_barcode = request.form.get("insert_barcode")
+        if selected_barcode == "":
+           return render_template("price_history.html", data = None)
+
+        data_dict = {}
+        data_dict['barcode'] = selected_barcode
+        description = query.get_one_col("SELECT name FROM Product WHERE barcode = {}".format(selected_barcode))         
+        print(description)
+        if not description:
+            data_dict['description'] = None
+        else:
+            data_dict['description'] = description[0]
+
+        data_dict['headers'] = ['start date', 'end date', 'amount']
+        data_dict['values'] = query.get_table("SELECT start_date, end_date, amount " +
+                                              "FROM Price " +
+                                              "WHERE barcode = {}".format(selected_barcode))
+
+        return render_template("price_history.html", barcode = selected_barcode, data = data_dict)
+
+@app.route("/shopping-stats", methods = ['GET', 'POST'])
+def shopping_stats():
+
+    if request.method == 'GET':
+       return render_template("shopping_stats.html", metric = None, data = None)
+
+    if request.method == 'POST':
+
+       selected_metric = request.form.get("select_metric")
+       print(selected_metric)
+       data_dict = {}
+       
+       if selected_metric == 'fav_pairs':
+           data_dict['fav_pairs'] = {}
+           data_dict['fav_pairs']['headers'] = ['Barcode 1', 'Product name 1', 'Barcode 2', 'Product name 2', 'Pair frequency']
+           data_dict['fav_pairs']['values'] = query.get_table("WITH buy_products_names(barcode, name, transaction_id) AS " +
+                                                                   "(SELECT P.barcode, P.name, B.transaction_id FROM buy_products AS B NATURAL JOIN Product AS P) " + 
+                                                              "SELECT B1.barcode, B1.name, B2.barcode, B2.name, COUNT(*) AS pair_freq " +
+                                                              "FROM buy_products_names AS B1, buy_products_names AS B2 " +
+                                                              "WHERE B1.transaction_id = B2.transaction_id and B1.barcode < B2.barcode " +
+                                                              "GROUP BY B1.barcode, B2.barcode " +
+                                                              "ORDER BY pair_freq DESC " +
+                                                              "LIMIT 10")
+       if selected_metric == 'fav_spot':
+           data_dict['fav_spot'] = {}
+           data_dict['fav_spot']['headers'] = ['Store_id', 'Aisle', 'Shelf', 'Shelf share']
+           data_dict['fav_spot']['values'] = query.get_table("SELECT O.store_id, O.aisle, O.shelf, SUM(B.quantity) * 100.0 / SUM(SUM(B.quantity)) OVER(PARTITION BY O.store_id) AS shelf_share " +
+                                                             "FROM offers_products as O, buy_products as B, Transaction as T " +
+                                                             "WHERE O.barcode = B.barcode AND T.transaction_id = B.transaction_id AND O.store_id = T.store_id " +
+                                                             "GROUP BY O.store_id, O.aisle, O.shelf " +
+                                                             "ORDER BY O.store_id, O.aisle, O.shelf")
+
+       if selected_metric == 'label_pop':
+           data_dict['label_pop'] = {}
+           data_dict['label_pop']['headers'] = ['Category', 'is_label', 'Percentage']
+           data_dict['label_pop']['values'] = query.get_table("SELECT P.category_id, P.label, SUM(B.quantity) * 100.0 / SUM(SUM(B.quantity)) OVER(PARTITION BY category_id) AS label_share " +
+                                                              "FROM Product as P INNER JOIN buy_products as B ON P.barcode = B.barcode " +
+                                                              "GROUP BY P.category_id, P.label " +
+                                                              "ORDER BY P.category_id, P.label")
+
+       if selected_metric == 'fav_hour':
+           data_dict['money_hour'] = {} 
+           data_dict['money_hour']['headers'] = ['Store_id', 'Hour', 'Share']
+           data_dict['money_hour']['values'] = query.get_table("SELECT store_id, HOUR(timestamp) AS shop_time, " + 
+                                                                      "SUM(total_amount) * 100.0 / SUM(SUM(total_amount)) OVER(PARTITION BY store_id) AS amount_per_hour " +
+                                                               "FROM Transaction " +
+                                                               "GROUP BY store_id, shop_time " +
+                                                               "ORDER BY store_id, shop_time")
+
+           data_dict['age_hour'] = {}
+           data_dict['age_hour']['headers'] = ['Age', 'Hour', 'Share']
+           data_dict['age_hour']['values'] = query.get_table("SELECT FLOOR(YEAR(C.date_of_birth)/10)*10 AS age, HOUR(T.Timestamp) as shop_time, " + 
+                                                                    "COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY FLOOR(YEAR(C.date_of_birth)/10)*10) as share " +
+                                                             "FROM Transaction AS T INNER JOIN Customer AS C ON T.card_id = C.card_id " +
+                                                             "GROUP BY age, shop_time " +
+                                                             "ORDER BY age, shop_time")
+
+       return render_template("shopping_stats.html", metric = selected_metric, data = data_dict)
 
 @app.route("/customer-stats", methods = ['GET', 'POST'])
 def customer_stats():
@@ -46,8 +177,47 @@ def customer_stats():
         else:
             return render_template("customer_stats.html", customer = None, data = None)         
 
-        top10_products = query.get_table("SELECT P.barcode, P.name, sum(B.quantity) AS total_quantity FROM buy_products as B INNER JOIN Product as P ON B.barcode = P.barcode and B.transaction_id IN (SELECT transaction_id FROM Transaction WHERE card_id = {}) GROUP BY P.barcode ORDER BY total_quantity DESC LIMIT 10".format(selected_card)) 
-        visited_stores = query.get_table("SELECT DISTINCT T.store_id, S.store_name FROM Transaction AS T INNER JOIN Store AS S ON T.store_id = S.store_id AND T.card_id = {} ORDER BY store_id".format(selected_card))
+        top10_products = query.get_table("SELECT P.barcode, P.name, sum(B.quantity) AS total_quantity " + 
+                                         "FROM buy_products AS B INNER JOIN Product AS P ON B.barcode = P.barcode " +
+                                         "AND B.transaction_id IN (SELECT transaction_id FROM Transaction WHERE card_id = {}) ".format(selected_card) +
+                                         "GROUP BY P.barcode " + 
+                                         "ORDER BY total_quantity DESC " +
+                                         "LIMIT 10") 
+
+        visited_stores = query.get_table("SELECT DISTINCT T.store_id, S.store_name " + 
+                                         "FROM Transaction AS T INNER JOIN Store AS S ON T.store_id = S.store_id AND T.card_id = {} ".format(selected_card) +
+                                         "ORDER BY store_id")
+
+        visit_per_hour = query.get_table("SELECT HOUR(timestamp) AS dt, SUM(total_amount) AS amount_per_dt, " +
+                                                "SUM(total_amount) * 100.0 / SUM(SUM(total_amount)) OVER () AS share_per_dt " +
+                                         "FROM Transaction "+
+                                         "WHERE card_id = {} ".format(selected_card) +
+                                         "GROUP BY dt " +
+                                         "ORDER BY dt")
+
+        hours_visit = query.get_one_col("SELECT HOUR(timestamp) AS dt " +
+                                        "FROM Transaction " +
+                                        "WHERE card_id = {} ".format(selected_card) +
+                                        "GROUP BY dt " +
+                                        "ORDER BY dt")
+
+        hours_share = query.get_one_col("SELECT SUM(total_amount) * 100.0 / SUM(SUM(total_amount)) OVER () AS share_per_dt, HOUR(timestamp) AS dt " +
+                                         "FROM Transaction " +
+                                         "WHERE card_id = {} ".format(selected_card) +
+                                         "GROUP BY dt " +
+                                         "ORDER BY dt")
+
+        week_average = query.get_table("SELECT YEAR(timestamp) AS t_year, WEEK(timestamp) AS t_week, SUM(total_amount) AS week_total " +
+                                       "FROM Transaction " +
+                                       "WHERE card_id = {} ".format(selected_card) +
+                                       "GROUP BY t_year, t_week " +
+                                       "ORDER BY t_year, t_week")
+
+        month_average = query.get_table("SELECT YEAR(timestamp) AS t_year, MONTH(timestamp) AS t_month, SUM(total_amount) AS month_total " +
+                                       "FROM Transaction " +
+                                       "WHERE card_id = {} ".format(selected_card) +
+                                       "GROUP BY t_year, t_month " +
+                                       "ORDER BY t_year, t_month")
 
         data_dict['fav_prod'] = {}
         data_dict['fav_prod']['table'] = top10_products
@@ -57,18 +227,48 @@ def customer_stats():
         data_dict['stores']['table'] = visited_stores
         data_dict['stores']['headers'] = ['store ID', 'Store name']
 
+        data_dict['fav_hour'] = {}
+        data_dict['fav_hour']['table'] = visit_per_hour
+        data_dict['fav_hour']['headers'] = ['hour', 'Total amount per hour', 'share per hour']
+
+        data_dict['week_avg'] = {}
+        data_dict['week_avg']['table'] = week_average
+        data_dict['week_avg']['headers'] = ['year', 'week', 'Week total']
+
+        data_dict['month_avg'] = {}
+        data_dict['month_avg']['table'] = month_average
+        data_dict['month_avg']['headers'] = ['year', 'month', 'month total'] 
+
+        i = 0
+        bar_values = []
+        bar_labels = range(0,24)
+        for h in bar_labels:
+            if h == hours_visit[i]:
+                bar_values.append(hours_share[i])
+                if (i < len(hours_visit)-1):
+                    i += 1
+            else:
+                bar_values.append(0.0)
+
+        data_dict['fav_hour']['labels'] = bar_labels
+        data_dict['fav_hour']['values'] = bar_values
+        data_dict['fav_hour']['max'] = max(bar_values)
+
         return render_template("customer_stats.html", customer = customer_dict, data = data_dict)
 
 @app.route("/select", methods = ['GET', 'POST'])
 def select():
-    tables = ['Product', 'Store', 'Customer', 'Transaction']
+
+    filters_dict = {}
+    filters_dict['tables'] = ['Product', 'Store', 'Customer', 'Transaction']
     if request.method == 'GET':
-        return render_template("select.html", table_names = tables, selected_table="")
+        filters_dict['selected_table'] = ""
+        return render_template("select.html", filters = filters_dict)
     if request.method == 'POST':
-        selected_t = request.form.get("select_table")
-        stores = query.get_one_col("SELECT store_name from Store")
-        categories = query.get_one_col("SELECT category_name from Category")
-        return render_template("select.html", selected_table = selected_t, table_names = tables, store_names = stores, category_names = categories)
+        filters_dict['selected_table'] = request.form.get("select_table")
+        filters_dict['store_names'] = query.get_one_col("SELECT store_name from Store")
+        filters_dict['category_names'] = query.get_one_col("SELECT category_name from Category")
+        return render_template("select.html", filters = filters_dict)
 
 @app.route("/presentation", methods = ['POST'])
 def present():
@@ -81,6 +281,8 @@ def present():
             selected_date = request.form.get("shop_date")
             selected_tid = request.form.get("transaction_id")
             selected_quantity = request.form.get("total_quantity")
+            selected_min_price = request.form.get("min_price")
+            selected_max_price = request.form.get("max_price")
 
             if selected_tid != "":
                 selected_data = query.get_table("SELECT * FROM Transaction WHERE transaction_id = {}".format(selected_tid))
@@ -94,6 +296,10 @@ def present():
                     query_arr.append("timestamp like '{}%'".format(selected_date))
                 if selected_quantity != "":
                     query_arr.append("total_pieces = {}".format(selected_quantity))
+                if selected_min_price != "":
+                    query_arr.append("total_amount > {}".format(selected_min_price))
+                if selected_max_price != "":
+                    query_arr.append("total_amount < {}".format(selected_max_price))
 
                 query_str = query_arr[0] + " WHERE "
                 for q in query_arr[1:-1]:
@@ -104,7 +310,6 @@ def present():
 
             headers = query.get_one_col("DESCRIBE Transaction")
             return render_template("presentation.html", data = [headers, selected_data])
-
 
         elif selected_table == "Product":
             selected_category = str(request.form.get("select_category"))
