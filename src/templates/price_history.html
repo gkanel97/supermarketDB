@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+table {
+  font-family: sans-serif;
+  border-collapse: collapse;
+  table-layout: auto
+  width: 90%;
+}
+
+td {
+  border: 1px solid black;
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  border: 1px solid black;
+  text-align: center;
+  padding: 8px;
+  background-color: #dddddd;
+}
+</style>
+
+<body>
+
+<h2>Search for information in the database</h2>
+<h3>Select database table to present</h3>
+
+<div>
+<form method="POST" action="/price-history">
+    <label for="barcode_input">Insert product barcode</label>
+    <input type="text" id="barcode_input" name="insert_barcode" min_length="13" max_length="13"><br><br>
+    <input class="btn" type="submit" value="Search">
+</form>
+</div>
+
+{% if data != None %}
+<div>
+    {% if data['description'] == None %} 
+        <h4>There is no registered product with barcode  = {{ data['barcode'] }}</h4>
+    {% else %}
+        <h3>Price history for product {{ data['description'] }} with barcode = {{ data['barcode'] }}</h3>
+        <table>
+            <tr>
+                {% for header in data['headers'] %}
+                    <th> {{ header|capitalize }} </th>
+                {% endfor %}
+            </tr>
+            {% for row in data['values'] %}
+                <tr>
+                    {% for cell in row %}
+                        <td> {{ cell }} </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+<div>
+{% endif %}
+
+</body>
+</html>
