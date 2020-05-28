@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div>
+<h3>Select a table to modify and the desired action</h3>
+<form method="POST" action="/modify-tables">
+    <input type="hidden" name="form_step" value="one">
+    <select id="action_dropdown" name="select_action">
+        <option value="" selected disabled hidden>Select an action</option>
+        <option value="insert"
+            {% if selected_action == 'insert' %}
+                selected
+            {% endif %}
+        >Insert</option>
+        <option value="delete"
+            {% if selected_action == 'delete' %}
+                selected
+            {% endif %}
+        >Delete</option>
+        <option value="modify"
+            {% if selected_action == 'modify' %}
+                selected
+            {% endif %}
+        >Modify</option>
+    </select>
+    <select id="table_dropdown" name="select_table">
+        <option value="" selected disabled hidden>Select a table</option>
+        <option value="Customer" 
+            {% if selected_table == 'Customer' %}
+                selected
+            {% endif %}
+        >Customer</option>
+        <option value="Store"
+            {% if selected_table == 'Store' %}
+                selected
+            {% endif %}
+        >Store</option>
+        <option value="Product"
+            {% if selected_table == 'Product' %}
+                selected
+            {% endif %}
+        >Product</option>
+    </select>
+    <input class="btn" type="submit" value="Select"><br><br>
+</form>
+</div>
+
+<div>
+{% if selected_action in ['modify', 'delete']  %}
+    <form method="POST" action="/modify-tables">
+    <input type="hidden" name="form_step" value="two">
+    <input type="hidden" name="select_action" value="{{ selected_action }}">
+    <input type="hidden" name="select_table" value="{{ selected_table }}">
+    {% if selected_table == 'Customer' %}
+        <label for="card_id">Card ID</label>
+        <input type="text" id="card_id" name="insert_card"><br>
+        <label for="customer_name">Or insert customer name</label>
+        <input type="text" id="customer_name" name="insert_name">
+     {% elif selected_table == 'Store' %}
+        <label for="store_id">Insert store ID</label>
+        <input type="text" id="store_id" name="insert_store_id">
+     {% elif selected_table == 'Product' %}
+        <label for="barcode">Insert product barcode</label>
+        <input type="text" id="barcode" name="insert_barcode"> 
+     {% endif %}
+     <input class="btn" type="submit" value="Search"><br><br>
+     </form>
+
+{% elif selected_action == 'insert' %}
+    {% if selected_table == 'Customer' %}
+        <h4>Insert the following data for the new customer</h4>
+        <form method="POST" action="/modify-tables">
+        <input type="hidden" name="form_step" value="two">
+        <input type="hidden" name="select_action" value="insert">
+        <input type="hidden" name="select_table" value="Customer">
+        <label for="customer name">Customer name</label>
+        <input type="text" id="customer_name" name="insert_name"><br>
+        <label for="dob_calender">Date of Birth</label>
+        <input type="date" id="dob_calender" name="select_dob"><br>
+        <label for="sex_dropdown">Sex</label>
+        <select id="sex_dropdown" name="select_sex">
+            <option value="" selected disabled hidden>-</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select><br>
+        <label for="pet_dropdown">Pet</label>
+        <select id="pet_dropdown" name="select_pet">
+            <option value="" selected disabled hidden>-</option>
+            <option value="Dog">Dog</option>
+            <option value="Cat">Cat</option>
+            <option value="Parrot">Parrot</option>
+            <option value="None">None</option>
+        </select><br>
+        <label for="street">Street</label>
+        <input type="text" id="street" name="insert_street">
+        <label for="street_no">Number</label>
+        <input type="text" id="street_no" name="insert_street_no">
+        <label for="postal_code">Postal code</label>
+        <input type="text" id="postal_code" name="insert_postal_code">
+        <label for="city">City</label>
+        <input type="text" id="city" name="insert_city"><br><br>
+        <input class="btn" type="submit" value="Insert">
+        </form>
+
+    {% elif selected_table == 'Product' %}
+        <h4>Insert the following data for the new product</h4>
+        <form method="POST" action="/modify-tables">
+        <input type="hidden" name="form_step" value="two">
+        <input type="hidden" name="select_action" value="insert">
+        <input type="hidden" name="select_table" value="Product">
+        <label for="product_name">Product name</label>
+        <input type="text" id="product_name" name="insert_product_name"><br>
+        <label for="price">Price</label>
+        <input type="text" id="price" name="insert_price"><br>
+        <label for="is_label">The product is a supermarket label</label>
+        <select id="is_label" name="check_label">
+            <option value="" selected disabled hidden>-</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select><br><br>
+        <input class="btn" type="submit" value="Insert">
+        </form>
+
+    {% elif selected_table == 'Store' %}
+        <h4>Insert the following data for the new store</h4>
+        <form method="POST" action="/modify-tables">
+        <input type="hidden" name="form_step" value="two">
+        <input type="hidden" name="select_action" value="insert">
+        <input type="hidden" name="select_table" value="Store">
+        <label for="street">Street</label>
+        <input type="text" id="street" name="insert_street">
+        <label for="street_no">Number</label>
+        <input type="text" id="street_no" name="insert_street_no">
+        <label for="postal_code">Postal code</label>
+        <input type="text" id="postal_code" name="insert_postal_code">
+        <label for="city">City</label>
+        <input type="text" id="city" name="insert_city"><br>
+        <label for="area">Store area in square meters</label>
+        <input type="text" id="area" name="insert_area"><br>
+        <label for="opening_hours">Opening hours</label>
+        <input type="text" id="opening_hours" name="insert_opening_hours"><br><br>
+        <input class="btn" type="submit" value="Insert">
+        </form>
+    
+    {% endif %}
+
+{% endif %} 
+</div>
+
+</body>
+</html>
