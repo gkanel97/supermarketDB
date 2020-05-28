@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: sans-serif;
+  border-collapse: collapse;
+  table-layout: auto
+  width: 90%;
+}
+
+td {
+  border: 1px solid black;
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  border: 1px solid black;
+  text-align: center;
+  padding: 8px;
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+<h2>Shopping data statistic analysis</h2>
+<h3>Select metric to show</h3>
+<div>
+<form method="POST" action="/shopping-stats">
+    <select id="metric_dropdown" name="select_metric"><br>
+        <option value="" selected disabled hidden>Select metric</option>
+        <option value="fav_pairs">Product pairs usually bought together</option>
+        <option value="fav_spot">Shelves with most purchases</option>
+        <option value="label_pop">Label popularity per category</option>
+        <option value="fav_hour">Visits per hour</option>
+    </select><br>
+    <input type="submit" value="Show statistics">
+</form>
+</div>
+
+{% if metric == 'fav_pairs' %}
+    <h3>Favorite pairs</h3>
+    <table>
+        <tr>
+            {% for header in data['fav_pairs']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['fav_pairs']['values'] %}
+            <tr>
+                {% for cell in row %}
+                    <td> {{ cell }} </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+
+{% elif metric == 'fav_spot' %}
+    <h3>Best spot to place products</h3>
+    <table>
+        <tr>
+            {% for header in data['fav_spot']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['fav_spot']['values'] %}
+            <tr>
+                {% for cell in row %}
+                    <td> {{ cell }} </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+
+{% elif metric == 'label_pop' %}
+    <h3>Label popularity per product category</h3>
+    <table>
+        <tr>
+            {% for header in data['label_pop']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['label_pop']['values'] %}
+            <tr>
+                {% for cell in row %}
+                    <td> {{ cell }} </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+
+{% elif metric == 'fav_hour' %}
+    <h3>Money spent per hour</h3>
+    <table>
+        <tr>
+            {% for header in data['money_hour']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['money_hour']['values'] %}
+            <tr>
+                {% for cell in row %}
+                    <td> {{ cell }} </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    <h3>Visits per age group and hour</h3>
+    <table>
+        <tr>
+            {% for header in data['age_hour']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['age_hour']['values'] %}
+            <tr>
+                {% for cell in row %}
+                    <td> {{ cell }} </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
