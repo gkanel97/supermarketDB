@@ -22,6 +22,7 @@ th {
   background-color: #dddddd;
 }
 </style>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
 </head>
 
 <body>
@@ -82,6 +83,84 @@ th {
             </tr>
         {% endfor %}
     </table></div>
+
+    <div><h4>Total amount per week</h4>
+    <table>
+        <tr>
+            {% for header in data['week_avg']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['week_avg']['table'] %}
+            <tr>
+            {% for cell in row %}
+                <td> {{ cell }} </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </table></div>
+
+    <div><h4>Total amount per month</h4>
+    <table>
+        <tr>
+            {% for header in data['month_avg']['headers'] %}
+                <th> {{ header|capitalize }} </th>
+            {% endfor %}
+        </tr>
+        {% for row in data['month_avg']['table'] %}
+            <tr>
+            {% for cell in row %}
+                <td> {{ cell }} </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </table></div>
+
+
+    <div><h4>Shopping frequency by hour</h4>
+    <canvas id="chart" width="600" height="400"></canvas>
+    <script>
+      // bar chart data
+      var barData = {
+        labels : [
+          {% for item in data['fav_hour']['labels'] %}
+           "{{ item }}",
+          {% endfor %}
+	],
+
+        datasets : [{
+          fillColor: "rgba(151,187,205,0.2)",
+          strokeColor: "rgba(151,187,205,1)",
+          pointColor: "rgba(151,187,205,1)",
+          data : [
+            {% for item in data['fav_hour']['values'] %}
+               "{{ item }}",
+              {% endfor %}
+	    ]
+          }
+        ]
+      }
+
+     // get bar chart canvas
+     var mychart = document.getElementById("chart").getContext("2d");
+
+       steps = 10
+       max = {{ data['fav_hour']['max'] }}
+
+     // draw bar chart
+     new Chart(mychart).Bar(barData, {
+       scaleOverride: true,
+       scaleSteps: steps,
+       scaleStepWidth: Math.ceil(max / steps),
+       scaleStartValue: 0,
+       scaleShowVerticalLines: true,
+       scaleShowGridLines : true,
+       barShowStroke : true,
+       scaleShowLabels: true
+       }
+     );
+
+    </script></div>
 
 {% endif %}
 
