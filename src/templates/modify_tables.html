@@ -9,17 +9,17 @@
     <select id="action_dropdown" name="select_action">
         <option value="" selected disabled hidden>Select an action</option>
         <option value="insert"
-            {% if selected_action == 'insert' %}
+            {% if selected['action'] == 'insert' %}
                 selected
             {% endif %}
         >Insert</option>
         <option value="delete"
-            {% if selected_action == 'delete' %}
+            {% if selected['action'] == 'delete' %}
                 selected
             {% endif %}
         >Delete</option>
         <option value="modify"
-            {% if selected_action == 'modify' %}
+            {% if selected['action'] == 'modify' %}
                 selected
             {% endif %}
         >Modify</option>
@@ -27,17 +27,17 @@
     <select id="table_dropdown" name="select_table">
         <option value="" selected disabled hidden>Select a table</option>
         <option value="Customer" 
-            {% if selected_table == 'Customer' %}
+            {% if selected['table'] == 'Customer' %}
                 selected
             {% endif %}
         >Customer</option>
         <option value="Store"
-            {% if selected_table == 'Store' %}
+            {% if selected['table'] == 'Store' %}
                 selected
             {% endif %}
         >Store</option>
         <option value="Product"
-            {% if selected_table == 'Product' %}
+            {% if selected['table'] == 'Product' %}
                 selected
             {% endif %}
         >Product</option>
@@ -47,28 +47,90 @@
 </div>
 
 <div>
-{% if selected_action in ['modify', 'delete']  %}
+{% if selected['action'] in ['modify', 'delete']  %}
     <form method="POST" action="/modify-tables">
-    <input type="hidden" name="form_step" value="two">
-    <input type="hidden" name="select_action" value="{{ selected_action }}">
-    <input type="hidden" name="select_table" value="{{ selected_table }}">
-    {% if selected_table == 'Customer' %}
+    <input type="hidden" name="form_step" value="three">
+    <input type="hidden" name="select_action" value="{{ selected['action'] }}">
+    <input type="hidden" name="select_table" value="{{ selected['table'] }}">
+    {% if selected['table'] == 'Customer' %}
         <label for="card_id">Card ID</label>
         <input type="text" id="card_id" name="insert_card"><br>
         <label for="customer_name">Or insert customer name</label>
         <input type="text" id="customer_name" name="insert_name">
-     {% elif selected_table == 'Store' %}
+     {% elif selected['table'] == 'Store' %}
         <label for="store_id">Insert store ID</label>
         <input type="text" id="store_id" name="insert_store_id">
-     {% elif selected_table == 'Product' %}
+     {% elif selected['table'] == 'Product' %}
         <label for="barcode">Insert product barcode</label>
         <input type="text" id="barcode" name="insert_barcode"> 
      {% endif %}
      <input class="btn" type="submit" value="Search"><br><br>
      </form>
 
-{% elif selected_action == 'insert' %}
-    {% if selected_table == 'Customer' %}
+     {% if step == 'four' %}
+
+         {% if selected['table'] == 'Customer' %}
+             {% if selected['name'] == None %}
+                 <p>There is no registered customer with card ID = {{ selected['card_id'] }}</p>
+             {% elif selected['card_id'] == None %}
+                 <p>There is no registered customer named "{{ selected['name'] }}"</p>
+             {% else %}
+                 <form method="POST" action="/modify-tables">
+                 <input type="hidden" name="form_step" value="five">
+                 <input type="hidden" name="select_action" value="{{ selected['action'] }}">
+                 <input type="hidden" name="select_table" value="{{ selected['table'] }}">
+                 {% for d in ['name','sex','points','reg_date','pet','date_of_birth','street','number','postal_code','city'] %}
+                     <label for={{ d }}>{{ d }}</label>
+                     <input type="text" id={{ d }} name="insert_{{ d }}" value={{ selected[d] }}><br>
+                 {% endfor %}
+                 <br><input class="btn" type="submit" value="Modify"><br> 
+                 </form>
+             {% endif %}
+
+         {% elif selected['table'] == 'Product' %}
+             {% if selected['prod_name'] == None %}
+                 <p>There is no registered product with barcode = {{ selected['barcode'] }}</p>
+             {% else %}
+                 <form method="POST" action="/modify-tables">
+                 <input type="hidden" name="form_step" value="five">
+                 <input type="hidden" name="select_action" value="{{ selected['action'] }}">
+                 <input type="hidden" name="select_table" value="{{ selected['table'] }}">
+                 {% for d in ['barcode','prod_name','label','current_price','category_id'] %}
+                     <label for={{ d }}>{{ d }}</label>
+                     <input type="text" id={{ d }} name="insert_{{ d }}" value={{ selected[d] }}><br>
+                 {% endfor %}
+                 <br><input class="btn" type="submit" value="Modify"><br>
+                 </form>
+             {% endif %}
+
+         {% elif selected['table'] == 'Store' %}
+             {% if selected['store_name'] == None %}
+                 <p>There is no store with ID = {{ selected['store_id'] }}</p>
+             {% else %}
+                 <form method="POST" action="/modify-tables">
+                 <input type="hidden" name="form_step" value="five">
+                 <input type="hidden" name="select_action" value="{{ selected['action'] }}">
+                 <input type="hidden" name="select_table" value="{{ selected['table'] }}">
+                 {% for d in ['store_name','store_id','area','opening_hours','street_name','street_number','city','postal_code'] %}
+                     <label for={{ d }}>{{ d }}</label>
+                     <input type="text" id={{ d }} name="insert_{{ d }}" value={{ selected[d] }}><br>
+                 {% endfor %}
+                 <br><input class="btn" type="submit" value="Modify"><br>
+                 </form>
+             {% endif %}
+
+         {% endif %}
+
+     {% endif %}
+
+     {% if step == 'done' %}
+         <p>Done!<p>
+     {% elif step == 'error' %}
+         <p>An error occured<p>
+     {% endif %}
+
+{% elif selected['action'] == 'insert' %}
+    {% if selected['table'] == 'Customer' %}
         <h4>Insert the following data for the new customer</h4>
         <form method="POST" action="/modify-tables">
         <input type="hidden" name="form_step" value="two">
@@ -103,7 +165,7 @@
         <input class="btn" type="submit" value="Insert">
         </form>
 
-    {% elif selected_table == 'Product' %}
+    {% elif selected['table'] == 'Product' %}
         <h4>Insert the following data for the new product</h4>
         <form method="POST" action="/modify-tables">
         <input type="hidden" name="form_step" value="two">
@@ -122,7 +184,7 @@
         <input class="btn" type="submit" value="Insert">
         </form>
 
-    {% elif selected_table == 'Store' %}
+    {% elif selected['table'] == 'Store' %}
         <h4>Insert the following data for the new store</h4>
         <form method="POST" action="/modify-tables">
         <input type="hidden" name="form_step" value="two">

@@ -14,45 +14,120 @@ def home():
 def modify():
 
     if request.method == 'GET':
-        return render_template("modify_tables.html", selected_action = None, selected_table = None, data = None)
+        return render_template("modify_tables.html", selected = None, data = None)
 
     if request.method == 'POST':
-        
-        selected_t = request.form.get("select_table")
-        selected_a = request.form.get("select_action")
-        if not selected_t or not selected_a:
-            print("Table or action not selected")
-            return render_template("modify_tables.html", selected_table = None, selected_action = None, data = None)
-    
+       
+        selected_table = request.form.get("select_table")
+        selected_action = request.form.get("select_action")
         step = request.form.get("form_step")
-        print("step = ", step)
+ 
+        data_dict = {}
+        if not selected_table or not selected_action:
+            return render_template("modify_tables.html", selected = None, step = 'zero')
+        else:
+            data_dict['table'] = selected_table
+            data_dict['action'] = selected_action
+ 
         if step == 'one':
-            return render_template("modify_tables.html", selected_table = selected_t, selected_action = selected_a, data = None)
+            return render_template("modify_tables.html", selected = data_dict, step = 'two')
 
-        print("In step 2")
-        if selected_a == 'modify':
-            if selected_t == 'Customer':
-                selected_card = request.form.get("insert_card")
-                return "<h3>Selected card ID = {}</h3>".format(selected_card)
-            elif selected_t == 'Product':
-                selected_barcode = request.form.get("insert_barcode")
-                return "<h3>Selected barcode = {}</h3>".format(selected_barcode)
-            elif selected_t == 'Store':
-                selected_store = request.form.get("insert_store_id")
-                return "<h3>Selected store ID = {}</h3>".format(selected_store)
+        elif step == 'three':
 
-        if selected_a == 'delete':
-            if selected_t == 'Customer':
-                selected_card = request.form.get("insert_card")
-                return "<h3>Selected card ID = {}</h3>".format(selected_card)
-            elif selected_t == 'Product':
-                selected_barcode = request.form.get("insert_barcode")
-                return "<h3>Selected barcode = {}</h3>".format(selected_barcode)
-            elif selected_t == 'Store':
-                selected_store = request.form.get("insert_store_id")
-                return "<h3>Selected store ID = {}</h3>".format(selected_store)
+            if data_dict['action'] == 'modify':
+                
+                if data_dict['table'] == 'Customer':
+                    
+                    selected_card = request.form.get("insert_card")
+                    selected_name = request.form.get("insert_name")
 
-        return render_template("modify_tables.html", selected_table = None, selected_action = None, data = None)
+                    if selected_card != "":
+                        data_dict['card_id'] = selected_card
+                        selected_name = query.get_one_col("SELECT name FROM Customer WHERE card_id = {}".format(selected_card))
+                        if not selected_name:
+                            data_dict['name'] = None
+                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                        else:
+                            data_dict['name'] = selected_name[0]
+                            selected_name = data_dict['name']
+
+                    elif selected_name != "":
+                        data_dict['name'] = selected_name
+                        selected_card = query.get_one_col("SELECT card_id FROM Customer WHERE name = '{}'".format(selected_name))
+                        if not selected_card:
+                            data_dict['card_id'] = None
+                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                        else:
+                            data_dict['card_id'] = selected_card[0]
+                            selected_card = data_dict['card_id']
+
+                    else:
+                        return render_template("modify_tables.html", selected = data_dict, step = 'two')
+
+                    customer_data = ['sex','points','reg_date','pet','date_of_birth','street','number','postal_code','city']
+                    for d in customer_data:
+                        data_dict[d] = query.get_one_col("SELECT {} FROM Customer WHERE card_id = {}".format(d, selected_card))[0]
+           
+                    return render_template("modify_tables.html", selected = data_dict, step = 'four') 
+
+                elif data_dict['table'] == 'Product':
+
+                    selected_barcode = request.form.get("insert_barcode")
+                    if selected_barcode != "":
+                        data_dict['barcode'] = selected_barcode
+                        selected_prod_data = query.get_table("SELECT name,label,current_price,category_id FROM Product WHERE barcode = {}".format(selected_barcode))
+                        if not selected_prod_data:
+                            data_dict['prod_name'] = None
+                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                        else:
+                            print(selected_prod_data, selected_prod_data[0])
+                            data_dict['prod_name'] = selected_prod_data[0][0] 
+                            data_dict['label'] = selected_prod_data[0][1]
+                            data_dict['current_price'] = selected_prod_data[0][2]
+                            data_dict['category_id'] = selected_prod_data[0][3]
+                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                    else:
+                        return render_template("modify_tables.html", selected = data_dict, step = 'two')
+
+                elif data_dict['table'] == 'Store':
+                    selected_store = request.form.get("insert_store_id")
+                    if selected_store != "":
+                        data_dict['store_id'] = selected_store
+                        selected_store_name = query.get_one_col("SELECT store_name FROM Store WHERE store_id = {}".format(selected_store))
+                        if not selected_store_name:
+                            data_dict['store_name'] = None
+                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                        else:
+                            data_dict['store_name'] = selected_store_name[0]
+                            store_data = ['area','opening_hours','street_name','street_number','city','postal_code']
+                            for d in store_data:
+                                data_dict[d] = query.get_one_col("SELECT {} FROM Store WHERE store_id = {}".format(d, selected_store))[0]
+                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                    else:
+                        return render_template("modify_templates.html", selected = data_dict, step = 'two')
+
+        elif step == 'five':
+            if selected_table == 'Customer':
+                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+            
+            elif selected_table == 'Product':
+                return render_template("modify_tables.html", selected = data_dict, step = 'error')
+
+            elif selected_table == 'Store':
+                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+
+        if data_dict['action'] == 'delete':
+            if data_dict['table'] == 'Customer':
+                data_dict['card'] = request.form.get("insert_card")
+                return "<h3>Selected card ID = {}</h3>".format(data_dict['card'])
+            elif data_dict['table'] == 'Product':
+                data_dict['barcode'] = request.form.get("insert_barcode")
+                return "<h3>Selected barcode = {}</h3>".format(data_dict['barcode'])
+            elif data_dict['table'] == 'Store':
+                data_dict['store'] = request.form.get("insert_store_id")
+                return "<h3>Selected store ID = {}</h3>".format(data_dict['store'])
+
+        return render_template("modify_tables.html", selected = None, data = None)
 
 @app.route("/price-history", methods = ['GET', 'POST'])
 def price_history():
