@@ -34,10 +34,12 @@ def modify():
 
         elif step == 'three':
 
-            if data_dict['action'] == 'modify':
+            if data_dict['action'] in ['modify', 'delete']:
                 
                 if data_dict['table'] == 'Customer':
                     
+                    print("Here")
+ 
                     selected_card = request.form.get("insert_card")
                     selected_name = request.form.get("insert_name")
 
@@ -116,7 +118,7 @@ def modify():
             elif selected_table == 'Store':
                 return render_template("modify_tables.html", selected = data_dict, step = 'done')
 
-        if data_dict['action'] == 'delete':
+        if data_dict['action'] == 'delete-backup':
             if data_dict['table'] == 'Customer':
                 data_dict['card'] = request.form.get("insert_card")
                 return "<h3>Selected card ID = {}</h3>".format(data_dict['card'])

@@ -67,7 +67,7 @@
      <input class="btn" type="submit" value="Search"><br><br>
      </form>
 
-     {% if step == 'four' %}
+     {% if step == 'four' and selected['action'] == 'modify' %}
 
          {% if selected['table'] == 'Customer' %}
              {% if selected['name'] == None %}
@@ -122,6 +122,53 @@
          {% endif %}
 
      {% endif %}
+
+     {% if step == 'four' and selected['action'] == 'delete' %}
+
+         {% if selected['table'] == 'Customer' %} 
+             {% if selected['name'] == None %}
+                 <p>There is no registered customer with card ID = {{ selected['card_id'] }}</p>
+             {% elif selected['card_id'] == None %}
+                 <p>There is no registered customer named "{{ selected['name'] }}"</p>
+             {% else %}
+                 <p>Are you sure you want to delete customer "{{ selected['name'] }}" with card ID = {{ selected['card_id'] }}?</p>
+                 <form method="POST" action="/modify-tables">
+                 <input type="hidden" name="form_step" value="five">
+                 <input type="hidden" name="select_action" value="delete">
+                 <input type="hidden" name="select_table" value="Customer">
+                 <input class="btn" type="submit" value="Delete">
+                 </form>
+             {% endif %}
+
+         {% elif selected['table'] == 'Product' %}
+             {% if selected['prod_name'] == None %}
+                 <p>There is no registered product with barcode = {{ selected['barcode'] }}</p>
+             {% else %}
+                 <p>Are you sure you want to delete product "{{ selected['prod_name'] }}" with barcode = {{ selected['barcode'] }}?</p>
+                 <form method="POST" action="/modify-tables">
+                 <input type="hidden" name="form_step" value="five">
+                 <input type="hidden" name="select_action" value="delete">
+                 <input type="hidden" name="select_table" value="Product">
+                 <input class="btn" type="submit" value="Delete">
+                 </form>
+             {% endif %}
+
+         {% elif selected['table'] == 'Store' %}
+             {% if selected['store_name'] == None %}
+                 <p>There is no store with ID = {{ selected['store_id'] }}</p>
+             {% else %}
+                 <p>Are you sure you want to delete store "{{ selected['store_name'] }}" with store ID = {{ selected['store_id'] }}?</p>
+                 <form method="POST" action="/modify-tables">
+                 <input type="hidden" name="form_step" value="five">
+                 <input type="hidden" name="select_action" value="delete">
+                 <input type="hidden" name="select_table" value="Store">
+                 <input class="btn" type="submit" value="Delete">
+                 </form>
+             {% endif %}
+
+         {% endif %}
+
+{% endif %}
 
      {% if step == 'done' %}
          <p>Done!<p>
