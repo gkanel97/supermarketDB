@@ -2,6 +2,7 @@ import mysql.connector
 from mysql.connector import Error
 import connect_to_db
 import query
+import form2query
 from flask import Flask, render_template, request 
 
 app = Flask(__name__)
@@ -34,28 +35,46 @@ def modify():
 
         elif step == 'three':
 
-            if data_dict['action'] in ['modify', 'delete']:
+            if selected_action == 'insert':
                 
-                if data_dict['table'] == 'Customer':
-                    
-                    print("Here")
+                if selected_table == 'Customer':
+                    new_customer_data = ['customer_name','dob','pet','sex','street_name','street_number','city','postal_code']
+                    new_customer_types = ['str','str','str','str','str','int','str','int']
+                    query_str = form2query.insert(new_customer_data, new_customer_types, 'Customer')
  
+                elif selected_table == 'Product':
+                    new_product_data = ['barcode','product_name','current_price','category_id','label']
+                    new_product_types = ['int','str','float','int','bool']
+                    query_str = form2query.insert(new_product_data, new_product_types, 'Product')
+
+                elif selected_table == 'Store':      
+                    new_store_data = ['store_name','area','street_name','street_number','city','postal_code','opening_hours']
+                    new_store_types = ['str','int','str','int','str','int','str']
+                    query_str = form2query.insert(new_store_data, new_store_types, 'Store') 
+
+                print(query_str)
+                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+
+            elif selected_action in ['modify', 'delete']:
+                
+                if selected_table == 'Customer':
+                    
                     selected_card = request.form.get("insert_card")
                     selected_name = request.form.get("insert_name")
 
                     if selected_card != "":
                         data_dict['card_id'] = selected_card
-                        selected_name = query.get_one_col("SELECT name FROM Customer WHERE card_id = {}".format(selected_card))
+                        selected_name = query.get_one_col("SELECT customer_name FROM Customer WHERE card_id = {}".format(selected_card))
                         if not selected_name:
-                            data_dict['name'] = None
+                            data_dict['customer_name'] = None
                             return render_template("modify_tables.html", selected = data_dict, step = 'four')
                         else:
-                            data_dict['name'] = selected_name[0]
-                            selected_name = data_dict['name']
+                            data_dict['customer_name'] = selected_name[0]
+                            selected_name = data_dict['customer_name']
 
                     elif selected_name != "":
-                        data_dict['name'] = selected_name
-                        selected_card = query.get_one_col("SELECT card_id FROM Customer WHERE name = '{}'".format(selected_name))
+                        data_dict['customer_name'] = selected_name
+                        selected_card = query.get_one_col("SELECT card_id FROM Customer WHERE customer_name = '{}'".format(selected_name))
                         if not selected_card:
                             data_dict['card_id'] = None
                             return render_template("modify_tables.html", selected = data_dict, step = 'four')
@@ -66,24 +85,24 @@ def modify():
                     else:
                         return render_template("modify_tables.html", selected = data_dict, step = 'two')
 
-                    customer_data = ['sex','points','reg_date','pet','date_of_birth','street','number','postal_code','city']
+                    customer_data = ['sex','points','reg_date','pet','date_of_birth','street_name','street_number','postal_code','city']
                     for d in customer_data:
                         data_dict[d] = query.get_one_col("SELECT {} FROM Customer WHERE card_id = {}".format(d, selected_card))[0]
            
                     return render_template("modify_tables.html", selected = data_dict, step = 'four') 
 
-                elif data_dict['table'] == 'Product':
+                elif selected_table == 'Product':
 
                     selected_barcode = request.form.get("insert_barcode")
                     if selected_barcode != "":
                         data_dict['barcode'] = selected_barcode
-                        selected_prod_data = query.get_table("SELECT name,label,current_price,category_id FROM Product WHERE barcode = {}".format(selected_barcode))
+                        print(selected_barcode)
+                        selected_prod_data = query.get_table("SELECT product_name,label,current_price,category_id FROM Product WHERE barcode = {}".format(selected_barcode))
                         if not selected_prod_data:
-                            data_dict['prod_name'] = None
+                            data_dict['product_name'] = None
                             return render_template("modify_tables.html", selected = data_dict, step = 'four')
                         else:
-                            print(selected_prod_data, selected_prod_data[0])
-                            data_dict['prod_name'] = selected_prod_data[0][0] 
+                            data_dict['product_name'] = selected_prod_data[0][0] 
                             data_dict['label'] = selected_prod_data[0][1]
                             data_dict['current_price'] = selected_prod_data[0][2]
                             data_dict['category_id'] = selected_prod_data[0][3]
@@ -91,7 +110,7 @@ def modify():
                     else:
                         return render_template("modify_tables.html", selected = data_dict, step = 'two')
 
-                elif data_dict['table'] == 'Store':
+                elif selected_table == 'Store':
                     selected_store = request.form.get("insert_store_id")
                     if selected_store != "":
                         data_dict['store_id'] = selected_store
@@ -109,27 +128,31 @@ def modify():
                         return render_template("modify_templates.html", selected = data_dict, step = 'two')
 
         elif step == 'five':
-            if selected_table == 'Customer':
-                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+
+            if selected_action == 'modify':
+                if selected_table == 'Customer':
+                    new_customer_data = ['card_id','customer_name','date_of_birth','reg_date','points','pet','sex','street_name','street_number','city','postal_code']
+                    new_customer_types = ['int','str','str','str','int','str','str','str','int','str','int']
+                    query_str = form2query.update(new_customer_data, new_customer_types, 'Customer')
             
-            elif selected_table == 'Product':
+                elif selected_table == 'Product':
+                    new_product_data = ['barcode','product_name','label','current_price','category_id']
+                    new_product_types = ['int','str','bool','float','int']
+                    query_str = form2query.update(new_product_data, new_product_types, 'Product')
+
+                elif selected_table == 'Store':
+                    new_store_data = ['store_id','store_name','area','opening_hours','street_name','street_number','city','postal_code']
+                    new_store_types = ['int','str','int','str','str','int','str','int']
+                    query_str = form2query.update(new_store_data, new_store_types, 'Store')
+
+                print(query_str)
+                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+
+            elif selected_action == 'delete':
+                print("To be filled")
                 return render_template("modify_tables.html", selected = data_dict, step = 'error')
 
-            elif selected_table == 'Store':
-                return render_template("modify_tables.html", selected = data_dict, step = 'done')
-
-        if data_dict['action'] == 'delete-backup':
-            if data_dict['table'] == 'Customer':
-                data_dict['card'] = request.form.get("insert_card")
-                return "<h3>Selected card ID = {}</h3>".format(data_dict['card'])
-            elif data_dict['table'] == 'Product':
-                data_dict['barcode'] = request.form.get("insert_barcode")
-                return "<h3>Selected barcode = {}</h3>".format(data_dict['barcode'])
-            elif data_dict['table'] == 'Store':
-                data_dict['store'] = request.form.get("insert_store_id")
-                return "<h3>Selected store ID = {}</h3>".format(data_dict['store'])
-
-        return render_template("modify_tables.html", selected = None, data = None)
+        return render_template("modify_tables.html", selected = None, step = 'zero')
 
 @app.route("/price-history", methods = ['GET', 'POST'])
 def price_history():
@@ -145,7 +168,7 @@ def price_history():
 
         data_dict = {}
         data_dict['barcode'] = selected_barcode
-        description = query.get_one_col("SELECT name FROM Product WHERE barcode = {}".format(selected_barcode))         
+        description = query.get_one_col("SELECT product_name FROM Product WHERE barcode = {}".format(selected_barcode))         
         print(description)
         if not description:
             data_dict['description'] = None
@@ -175,7 +198,7 @@ def shopping_stats():
            data_dict['fav_pairs'] = {}
            data_dict['fav_pairs']['headers'] = ['Barcode 1', 'Product name 1', 'Barcode 2', 'Product name 2', 'Pair frequency']
            data_dict['fav_pairs']['values'] = query.get_table("WITH buy_products_names(barcode, name, transaction_id) AS " +
-                                                                   "(SELECT P.barcode, P.name, B.transaction_id FROM buy_products AS B NATURAL JOIN Product AS P) " + 
+                                                                   "(SELECT P.barcode, P.product_name, B.transaction_id FROM buy_products AS B NATURAL JOIN Product AS P) " + 
                                                               "SELECT B1.barcode, B1.name, B2.barcode, B2.name, COUNT(*) AS pair_freq " +
                                                               "FROM buy_products_names AS B1, buy_products_names AS B2 " +
                                                               "WHERE B1.transaction_id = B2.transaction_id and B1.barcode < B2.barcode " +
@@ -233,17 +256,17 @@ def customer_stats():
 
         if selected_card != "":
             customer_dict['card_id'] = selected_card
-            selected_name = query.get_one_col("SELECT name FROM Customer WHERE card_id = {}".format(selected_card))
+            selected_name = query.get_one_col("SELECT customer_name FROM Customer WHERE card_id = {}".format(selected_card))
             if not selected_name:
-                customer_dict['name'] = None
+                customer_dict['customer_name'] = None
                 return render_template("customer_stats.html", customer = customer_dict, data = None)
             else:
-                customer_dict['name'] = selected_name[0]
-                selected_name = customer_dict['name']	
+                customer_dict['customer_name'] = selected_name[0]
+                selected_name = customer_dict['customer_name']	
 
         elif selected_name != "":
-            customer_dict['name'] = selected_name
-            selected_card = query.get_one_col("SELECT card_id FROM Customer WHERE name = '{}'".format(selected_name))
+            customer_dict['customer_name'] = selected_name
+            selected_card = query.get_one_col("SELECT card_id FROM Customer WHERE customer_name = '{}'".format(selected_name))
             if not selected_card:
                 customer_dict['card_id'] = None
                 return render_template("customer_stats.html", customer = customer_dict, data = None)
@@ -254,7 +277,7 @@ def customer_stats():
         else:
             return render_template("customer_stats.html", customer = None, data = None)         
 
-        top10_products = query.get_table("SELECT P.barcode, P.name, sum(B.quantity) AS total_quantity " + 
+        top10_products = query.get_table("SELECT P.barcode, P.product_name, sum(B.quantity) AS total_quantity " + 
                                          "FROM buy_products AS B INNER JOIN Product AS P ON B.barcode = P.barcode " +
                                          "AND B.transaction_id IN (SELECT transaction_id FROM Transaction WHERE card_id = {}) ".format(selected_card) +
                                          "GROUP BY P.barcode " + 
