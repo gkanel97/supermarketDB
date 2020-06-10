@@ -38,22 +38,25 @@ def modify():
             if selected_action == 'insert':
                 
                 if selected_table == 'Customer':
-                    new_customer_data = ['customer_name','dob','pet','sex','street_name','street_number','city','postal_code']
-                    new_customer_types = ['str','str','str','str','str','int','str','int']
-                    query_str = form2query.insert(new_customer_data, new_customer_types, 'Customer')
+                    new_data = ['card_id','customer_name','reg_date','date_of_birth','pet','sex','street_name','street_number','city','postal_code']
+                    new_data_types = ['int','str','str','str','str','str','str','int','str','int']
  
                 elif selected_table == 'Product':
-                    new_product_data = ['barcode','product_name','current_price','category_id','label']
-                    new_product_types = ['int','str','float','int','bool']
-                    query_str = form2query.insert(new_product_data, new_product_types, 'Product')
+                    new_data = ['barcode','product_name','current_price','category_id','label']
+                    new_data_types = ['int','str','float','int','bool']
 
                 elif selected_table == 'Store':      
-                    new_store_data = ['store_name','area','street_name','street_number','city','postal_code','opening_hours']
-                    new_store_types = ['str','int','str','int','str','int','str']
-                    query_str = form2query.insert(new_store_data, new_store_types, 'Store') 
+                    new_data = ['store_name','area','street_name','street_number','city','postal_code','opening_hours']
+                    new_data_types = ['str','int','str','int','str','int','str']
 
-                print(query_str)
-                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+                query_arr = form2query.insert(new_data, new_data_types, selected_table)
+
+                error = query.execute_and_commit(query_arr)
+                if error == None:
+                    return render_template("modify_tables.html", selected = data_dict, step = 'done')
+                else:
+                    data_dict['error'] = error
+                    return render_template("modify_tables.html", selected = data_dict, step = 'error')
 
             elif selected_action in ['modify', 'delete']:
                 
@@ -131,25 +134,27 @@ def modify():
 
             if selected_action == 'modify':
                 if selected_table == 'Customer':
-                    new_customer_data = ['card_id','customer_name','date_of_birth','reg_date','points','pet','sex','street_name','street_number','city','postal_code']
-                    new_customer_types = ['int','str','str','str','int','str','str','str','int','str','int']
-                    query_str = form2query.update(new_customer_data, new_customer_types, 'Customer')
+                    new_data = ['card_id','customer_name','date_of_birth','reg_date','points','pet','sex','street_name','street_number','city','postal_code']
+                    new_data_types = ['int','str','str','str','int','str','str','str','int','str','int']
             
                 elif selected_table == 'Product':
-                    new_product_data = ['barcode','product_name','label','current_price','category_id']
-                    new_product_types = ['int','str','bool','float','int']
-                    query_str = form2query.update(new_product_data, new_product_types, 'Product')
+                    new_data = ['barcode','product_name','label','current_price','category_id']
+                    new_data_types = ['int','str','bool','float','int']
 
                 elif selected_table == 'Store':
-                    new_store_data = ['store_id','store_name','area','opening_hours','street_name','street_number','city','postal_code']
-                    new_store_types = ['int','str','int','str','str','int','str','int']
-                    query_str = form2query.update(new_store_data, new_store_types, 'Store')
+                    new_data = ['store_id','store_name','area','opening_hours','street_name','street_number','city','postal_code']
+                    new_data_types = ['int','str','int','str','str','int','str','int']
 
-                print(query_str)
-                return render_template("modify_tables.html", selected = data_dict, step = 'done')
-
+                query_arr = form2query.update(new_data, new_data_types, selected_table)
+           
             elif selected_action == 'delete':
-                print("To be filled")
+                query_arr = form2query.delete(selected_table)
+
+            error = query.execute_and_commit(query_arr)
+            if error == None:
+                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+            else:
+                data_dict['error'] = error
                 return render_template("modify_tables.html", selected = data_dict, step = 'error')
 
         return render_template("modify_tables.html", selected = None, step = 'zero')

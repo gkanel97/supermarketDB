@@ -145,6 +145,7 @@
                  <input type="hidden" name="form_step" value="five">
                  <input type="hidden" name="select_action" value="delete">
                  <input type="hidden" name="select_table" value="Customer">
+                 <input type="hidden" name="insert_card_id" value="{{ selected['card_id'] }}">
                  <input class="btn" type="submit" value="Delete">
                  </form>
              {% endif %}
@@ -158,6 +159,7 @@
                  <input type="hidden" name="form_step" value="five">
                  <input type="hidden" name="select_action" value="delete">
                  <input type="hidden" name="select_table" value="Product">
+                 <input type="hidden" name="insert_barcode" value="{{ selected['barcode'] }}">
                  <input class="btn" type="submit" value="Delete">
                  </form>
              {% endif %}
@@ -171,6 +173,7 @@
                  <input type="hidden" name="form_step" value="five">
                  <input type="hidden" name="select_action" value="delete">
                  <input type="hidden" name="select_table" value="Store">
+                 <input type="hidden" name="insert_store_id" value="{{ selected['store_id'] }}">
                  <input class="btn" type="submit" value="Delete">
                  </form>
              {% endif %}
@@ -186,10 +189,12 @@
         <input type="hidden" name="form_step" value="three">
         <input type="hidden" name="select_action" value="insert">
         <input type="hidden" name="select_table" value="Customer">
+        <label for="card_id">Card ID</label>
+        <input type="text" id="card_id" name="insert_card_id"><br>
         <label for="customer name">Customer name</label>
         <input type="text" id="customer_name" name="insert_customer_name"><br>
         <label for="dob_calender">Date of Birth</label>
-        <input type="date" id="dob_calender" name="insert_dob"><br>
+        <input type="date" id="dob_calender" name="insert_date_of_birth"><br>
         <label for="sex_dropdown">Sex</label>
         <select id="sex_dropdown" name="insert_sex">
             <option value="" selected disabled hidden>-</option>
@@ -202,7 +207,7 @@
             <option value="Dog">Dog</option>
             <option value="Cat">Cat</option>
             <option value="Parrot">Parrot</option>
-            <option value="None">None</option>
+            <option value="">None</option>
         </select><br>
         <label for="street">Street</label>
         <input type="text" id="street" name="insert_street_name">
@@ -276,7 +281,7 @@
 {% if step == 'done' %}
      <p>Done!<p>
 {% elif step == 'error' %}
-     <p>An error occured<p>
+     <p>An error occured: {{ selected['error'] }}<p>
 {% endif %}
 
 </div>
