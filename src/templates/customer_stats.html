@@ -43,7 +43,7 @@ th {
 {% if customer != None and data == None %}
 <div>
     {% if customer['name'] != None %}
-        <h4>There is no registered customer with name "{{ customer['name'] }}"</h4>
+        <h4>There is no registered customer with name "{{ customer['customer_name'] }}"</h4>
     {% elif customer['card_id'] != None %}
         <h4>There is no registered customer with card ID = {{ customer['card_id'] }}</h4>
     {% endif %}
@@ -51,7 +51,7 @@ th {
 
 {% elif customer != None and data != None %}
 
-    <div><h3>Showing statistics for customer "{{ customer['name'] }}" with card ID = {{ customer['card_id'] }}</h3></div>
+    <div><h3>Showing statistics for customer "{{ customer['customer_name'] }}" with card ID = {{ customer['card_id'] }}</h3></div>
     <div><h4>Stores the customer shops from</h4>
     <table>
         <tr>
