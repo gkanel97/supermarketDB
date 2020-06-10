@@ -40,3 +40,20 @@ def get_table(query):
         cursor.close()
         connect_to_db.disconnect(conn)
         return table_data
+
+def execute_and_commit(query_arr):
+    try:
+        conn = connect_to_db.connect()
+        cursor = conn.cursor()
+        for q in query_arr:
+            cursor.execute(q)
+        conn.commit()
+        return None 
+
+    except Error as e:
+        print("An error occurred:" + str(e))
+        return e 
+
+    finally:
+        cursor.close()
+        connect_to_db.disconnect(conn)
