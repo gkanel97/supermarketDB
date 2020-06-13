@@ -1,92 +1,76 @@
 import query
 from flask import request
-from datetime import date
+from datetime import datetime
 
-def insert(form_fields, field_type, table):
-
-    field_arr = []
-    value_arr = []
-    type_arr = []
-    query_arr = []
-
-    for field,type in zip(form_fields, field_type):
-        if field == 'reg_date':
-            new_data = str(date.today())
-        else:
-            new_data = request.form.get("insert_" + field)
-
-        if new_data != "" and new_data != None:
-            field_arr.append(field)
-            value_arr.append(new_data)
-            type_arr.append(type)
+def insert(form_data, table):
+    for field_name, field_info in form_data.items():
+        temp = request.form.get("insert_" + field_name)
+        if temp != "" and temp != None:
+            field_info['value'] = temp
 
     field_tuple = "("
     value_tuple = "("
-    for f,v,t in zip(field_arr[:-1], value_arr[:-1], type_arr[:-1]):
-        field_tuple += f + ", "
-        if t == 'str': 
-            value_tuple += "'" + v + "', "
-        else:
-            value_tuple += v + ", "
-    field_tuple += field_arr[-1] + ")"
-    if type_arr[-1] == 'str': 
-        value_tuple += "'" + value_arr[-1] + "')"
-    else:
-        value_tuple += value_arr[-1] + ")"
-        
-    query_str = "INSERT INTO " + table + " " + field_tuple + " VALUES " + value_tuple + ";"
+    for field_name, field_info in form_data.items():
+        if field_info['value'] != None:
+            field_tuple += field_name + ", "
+            if field_info['type'] in ['str', 'date']:
+                value_tuple += "'" + field_info['value'] + "', "
+            else:
+                value_tuple += field_info['value'] + ", "
 
+    field_tuple = field_tuple[:-2] + ")"
+    value_tuple = value_tuple[:-2] + ")"
+    query_str = "INSERT INTO " + table + " " + field_tuple + " VALUES " + value_tuple
+
+    query_arr = []
     query_arr.append(query_str)
     if table == 'Product':
-        new_price = request.form.get("insert_current_price")
-        query_arr.append("INSERT INTO Price (barcode, start_date, amount) VALUES ({}, '{}', {})".format(value_arr[0], str(date.today()), new_price))
-
+        query_arr.append("INSERT INTO " + 
+                         "Price (barcode, amount) " + 
+                         "VALUES ({}, {})".format(form_data['barcode']['value'], form_data['current_price']['value']))
     return query_arr
 
-def update(form_fields, field_type, table):
 
-    field_arr = []
-    value_arr = []
-    type_arr = []
-    query_arr = []
+def update(form_data, table):
 
-    for field,type in zip(form_fields, field_type):
-        new_data = request.form.get("insert_" + field)
-        if new_data != "" and new_data != None:
-            field_arr.append(field)
-            value_arr.append(new_data)
-            type_arr.append(type)
+    for field_name, field_info in form_data.items():
+        temp = request.form.get("insert_" + field_name)
+        if temp != "" and temp != None:
+            field_info['value'] = temp
 
     query_str = "UPDATE " + table + " SET "
-    for f,v,t in zip(field_arr[1:-1], value_arr[1:-1], type_arr[1:-1]):
-        if t == 'str':
-            query_str += f + " = '" + v + "', "
-        else:
-            query_str += f + " = " + v + ", "
-    if type_arr[-1] == 'str':
-        query_str += field_arr[-1] + " = '" + value_arr[-1] + "' "
-    else:
-        query_str += field_arr[-1] + " = " + value_arr[-1] + " "
+    for field_name, field_info in form_data.items():
+        if field_info['value'] != None:
+            if field_info['type'] in ['str', 'date']:
+                query_str += field_name + " = '" + field_info['value'] + "', "
+            else:
+                query_str += field_name + " = " + field_info['value'] + ", "
 
     if table == 'Customer':
-        query_str += "WHERE card_id = {};".format(value_arr[0])
+        query_str = query_str[:-2] + " WHERE card_id = {}".format(form_data['card_id']['value'])
     elif table == 'Product':
-        query_str += "WHERE barcode = {};".format(value_arr[0])
+        query_str = query_str[:-2] + " WHERE barcode = {}".format(form_data['barcode']['value'])
     elif table == 'Store':
-        query_str += "WHERE store_id = {};".format(value_arr[0])
+        query_str = query_str[:-2] + " WHERE store_id = {}".format(form_data['store_id']['value'])
     else:
         print("Wrong table!")
 
+    query_arr = []
     query_arr.append(query_str)
 
     if table == 'Product':
-        old_price = float(query.get_one_col("SELECT current_price FROM Product WHERE barcode = {}".format(value_arr[0]))[0])
-        new_price = float(request.form.get("insert_current_price"))
-        if old_price != new_price: 
-            query_arr.append("UPDATE Price SET end_date = '{}' WHERE barcode = {} AND amount = {}".format(str(date.today()), value_arr[0], old_price))
-            query_arr.append("INSERT INTO Price (barcode, start_date, amount) VALUES ({}, '{}', {})".format(value_arr[0], str(date.today()), new_price))
+        old_price = query.get_one_col("SELECT current_price FROM Product WHERE barcode = {}".format(form_data['barcode']['value']))[0]
+        new_price = float(form_data['current_price']['value'])
+        if old_price:
+            old_price = float(old_price)
+            if old_price != new_price:
+                query_arr.append("UPDATE Price SET end_date = '{}' WHERE barcode = {} AND amount = {}".format(str(datetime.now()), form_data['barcode']['value'], old_price))
+                query_arr.append("INSERT INTO Price (barcode, amount) VALUES ({}, {})".format(form_data['barcode']['value'], new_price))
+        else:
+            query_arr.append("INSERT INTO Price (barcode, amount) VALUES ({}, {})".format(form_data['barcode']['value'], new_price))
 
     return query_arr
+
 
 def delete(table):
 
@@ -99,8 +83,8 @@ def delete(table):
     elif table == 'Product':
         selected_barcode = request.form.get("insert_barcode")
         old_price = query.get_one_col("SELECT current_price FROM Product WHERE barcode = {}".format(selected_barcode))[0]
-        query_arr.append("UPDATE Price SET end_date = '{}' WHERE barcode = {} AND amount = {}".format(str(date.today()), selected_barcode, old_price))
-        query_arr.append("INSERT INTO Price (barcode, start_date) VALUES ({}, '{}')".format(selected_barcode, str(date.today()))) 
+        query_arr.append("UPDATE Price SET end_date = '{}' WHERE barcode = {} AND amount = {}".format(str(datetime.now()), selected_barcode, old_price))
+        query_arr.append("INSERT INTO Price (barcode) VALUES ({})".format(selected_barcode)) 
         query_arr.append("UPDATE Product SET current_price = NULL WHERE barcode = {}".format(selected_barcode))
 
     elif table == 'Store':

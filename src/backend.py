@@ -3,6 +3,7 @@ from mysql.connector import Error
 import connect_to_db
 import query
 import form2query
+import dataDict
 from flask import Flask, render_template, request 
 
 app = Flask(__name__)
@@ -38,18 +39,15 @@ def modify():
             if selected_action == 'insert':
                 
                 if selected_table == 'Customer':
-                    new_data = ['card_id','customer_name','reg_date','date_of_birth','pet','sex','street_name','street_number','city','postal_code']
-                    new_data_types = ['int','str','str','str','str','str','str','int','str','int']
- 
+                    new_data = dataDict.Customer_data
                 elif selected_table == 'Product':
-                    new_data = ['barcode','product_name','current_price','category_id','label']
-                    new_data_types = ['int','str','float','int','bool']
+                    new_data = dataDict.Product_data
+                elif selected_table == 'Store':     
+                    new_data = dataDict.Store_data 
 
-                elif selected_table == 'Store':      
-                    new_data = ['store_name','area','street_name','street_number','city','postal_code','opening_hours']
-                    new_data_types = ['str','int','str','int','str','int','str']
-
-                query_arr = form2query.insert(new_data, new_data_types, selected_table)
+                query_arr = form2query.insert(new_data, selected_table)
+                for q in query_arr:
+                    print(q)
 
                 error = query.execute_and_commit(query_arr)
                 if error == None:
@@ -88,8 +86,7 @@ def modify():
                     else:
                         return render_template("modify_tables.html", selected = data_dict, step = 'two')
 
-                    customer_data = ['sex','points','reg_date','pet','date_of_birth','street_name','street_number','postal_code','city']
-                    for d in customer_data:
+                    for d in dataDict.Customer_data.keys():
                         data_dict[d] = query.get_one_col("SELECT {} FROM Customer WHERE card_id = {}".format(d, selected_card))[0]
            
                     return render_template("modify_tables.html", selected = data_dict, step = 'four') 
@@ -98,17 +95,13 @@ def modify():
 
                     selected_barcode = request.form.get("insert_barcode")
                     if selected_barcode != "":
-                        data_dict['barcode'] = selected_barcode
-                        print(selected_barcode)
-                        selected_prod_data = query.get_table("SELECT product_name,label,current_price,category_id FROM Product WHERE barcode = {}".format(selected_barcode))
-                        if not selected_prod_data:
+                        selected_product_name = query.get_table("SELECT product_name FROM Product WHERE barcode = {}".format(selected_barcode))
+                        if not selected_product_name:
                             data_dict['product_name'] = None
                             return render_template("modify_tables.html", selected = data_dict, step = 'four')
                         else:
-                            data_dict['product_name'] = selected_prod_data[0][0] 
-                            data_dict['label'] = selected_prod_data[0][1]
-                            data_dict['current_price'] = selected_prod_data[0][2]
-                            data_dict['category_id'] = selected_prod_data[0][3]
+                            for d in dataDict.Product_data.keys():
+                                data_dict[d] = query.get_one_col("SELECT {} FROM Product WHERE barcode = {}".format(d, selected_barcode))[0]
                             return render_template("modify_tables.html", selected = data_dict, step = 'four')
                     else:
                         return render_template("modify_tables.html", selected = data_dict, step = 'two')
@@ -134,21 +127,19 @@ def modify():
 
             if selected_action == 'modify':
                 if selected_table == 'Customer':
-                    new_data = ['card_id','customer_name','date_of_birth','reg_date','points','pet','sex','street_name','street_number','city','postal_code']
-                    new_data_types = ['int','str','str','str','int','str','str','str','int','str','int']
-            
+                    new_data = dataDict.Customer_data
                 elif selected_table == 'Product':
-                    new_data = ['barcode','product_name','label','current_price','category_id']
-                    new_data_types = ['int','str','bool','float','int']
-
+                    new_data = dataDict.Product_data
                 elif selected_table == 'Store':
-                    new_data = ['store_id','store_name','area','opening_hours','street_name','street_number','city','postal_code']
-                    new_data_types = ['int','str','int','str','str','int','str','int']
+                   new_data = dataDict.Store_data
 
-                query_arr = form2query.update(new_data, new_data_types, selected_table)
+                query_arr = form2query.update(new_data, selected_table)
            
             elif selected_action == 'delete':
                 query_arr = form2query.delete(selected_table)
+
+            for q in query_arr:
+                print(q)
 
             error = query.execute_and_commit(query_arr)
             if error == None:
