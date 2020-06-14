@@ -15,8 +15,10 @@ def home():
 @app.route("/modify-tables", methods = ['GET', 'POST'])
 def modify():
 
+    data_dict = {}
+
     if request.method == 'GET':
-        return render_template("modify_tables.html", selected = None, data = None)
+        return render_template("modify_tables.html", data = None, step = 'zero')
 
     if request.method == 'POST':
        
@@ -24,15 +26,14 @@ def modify():
         selected_action = request.form.get("select_action")
         step = request.form.get("form_step")
  
-        data_dict = {}
         if not selected_table or not selected_action:
-            return render_template("modify_tables.html", selected = None, step = 'zero')
+            return render_template("modify_tables.html", data = None, step = 'zero')
         else:
             data_dict['table'] = selected_table
             data_dict['action'] = selected_action
  
         if step == 'one':
-            return render_template("modify_tables.html", selected = data_dict, step = 'two')
+            return render_template("modify_tables.html", data = data_dict, step = 'two')
 
         elif step == 'three':
 
@@ -51,10 +52,10 @@ def modify():
 
                 error = query.execute_and_commit(query_arr)
                 if error == None:
-                    return render_template("modify_tables.html", selected = data_dict, step = 'done')
+                    return render_template("modify_tables.html", data = data_dict, step = 'done')
                 else:
                     data_dict['error'] = error
-                    return render_template("modify_tables.html", selected = data_dict, step = 'error')
+                    return render_template("modify_tables.html", data = data_dict, step = 'error')
 
             elif selected_action in ['modify', 'delete']:
                 
@@ -68,7 +69,7 @@ def modify():
                         selected_name = query.get_one_col("SELECT customer_name FROM Customer WHERE card_id = {}".format(selected_card))
                         if not selected_name:
                             data_dict['customer_name'] = None
-                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                            return render_template("modify_tables.html", data = data_dict, step = 'four')
                         else:
                             data_dict['customer_name'] = selected_name[0]
                             selected_name = data_dict['customer_name']
@@ -78,33 +79,34 @@ def modify():
                         selected_card = query.get_one_col("SELECT card_id FROM Customer WHERE customer_name = '{}'".format(selected_name))
                         if not selected_card:
                             data_dict['card_id'] = None
-                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                            return render_template("modify_tables.html", data = data_dict, step = 'four')
                         else:
                             data_dict['card_id'] = selected_card[0]
                             selected_card = data_dict['card_id']
 
                     else:
-                        return render_template("modify_tables.html", selected = data_dict, step = 'two')
+                        return render_template("modify_tables.html", data = data_dict, step = 'two')
 
                     for d in dataDict.Customer_data.keys():
                         data_dict[d] = query.get_one_col("SELECT {} FROM Customer WHERE card_id = {}".format(d, selected_card))[0]
            
-                    return render_template("modify_tables.html", selected = data_dict, step = 'four') 
+                    return render_template("modify_tables.html", data = data_dict, step = 'four') 
 
                 elif selected_table == 'Product':
 
                     selected_barcode = request.form.get("insert_barcode")
                     if selected_barcode != "":
+                        data_dict['barcode'] = selected_barcode
                         selected_product_name = query.get_table("SELECT product_name FROM Product WHERE barcode = {}".format(selected_barcode))
                         if not selected_product_name:
                             data_dict['product_name'] = None
-                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                            return render_template("modify_tables.html", data = data_dict, step = 'four')
                         else:
                             for d in dataDict.Product_data.keys():
                                 data_dict[d] = query.get_one_col("SELECT {} FROM Product WHERE barcode = {}".format(d, selected_barcode))[0]
-                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                            return render_template("modify_tables.html", data = data_dict, step = 'four')
                     else:
-                        return render_template("modify_tables.html", selected = data_dict, step = 'two')
+                        return render_template("modify_tables.html", data = data_dict, step = 'two')
 
                 elif selected_table == 'Store':
                     selected_store = request.form.get("insert_store_id")
@@ -113,15 +115,15 @@ def modify():
                         selected_store_name = query.get_one_col("SELECT store_name FROM Store WHERE store_id = {}".format(selected_store))
                         if not selected_store_name:
                             data_dict['store_name'] = None
-                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                            return render_template("modify_tables.html", data = data_dict, step = 'four')
                         else:
                             data_dict['store_name'] = selected_store_name[0]
                             store_data = ['area','opening_hours','street_name','street_number','city','postal_code']
                             for d in store_data:
                                 data_dict[d] = query.get_one_col("SELECT {} FROM Store WHERE store_id = {}".format(d, selected_store))[0]
-                            return render_template("modify_tables.html", selected = data_dict, step = 'four')
+                            return render_template("modify_tables.html", data = data_dict, step = 'four')
                     else:
-                        return render_template("modify_templates.html", selected = data_dict, step = 'two')
+                        return render_template("modify_templates.html", data = data_dict, step = 'two')
 
         elif step == 'five':
 
@@ -143,12 +145,12 @@ def modify():
 
             error = query.execute_and_commit(query_arr)
             if error == None:
-                return render_template("modify_tables.html", selected = data_dict, step = 'done')
+                return render_template("modify_tables.html", data = data_dict, step = 'done')
             else:
                 data_dict['error'] = error
-                return render_template("modify_tables.html", selected = data_dict, step = 'error')
+                return render_template("modify_tables.html", data = data_dict, step = 'error')
 
-        return render_template("modify_tables.html", selected = None, step = 'zero')
+        return render_template("modify_tables.html", data = None, step = 'zero')
 
 @app.route("/price-history", methods = ['GET', 'POST'])
 def price_history():
