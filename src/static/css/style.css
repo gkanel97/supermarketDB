@@ -1,0 +1,46 @@
+body {
+  margin: 0px;
+  font-family: sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: white;
+}
+
+table {
+  font-family: sans-serif;
+  border-collapse: collapse;
+  table-layout: auto
+  width: 100%;
+}
+
+td {
+  border: 1px solid black;
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  border: 1px solid black;
+  text-align: center;
+  padding: 8px;
+  background-color: #dddddd;
+}
+
+.sidebar {
+  position: fixed;
+  width: 250px;
+  height: 100%;
+  background: #151719;
+}
+
+.sidebar ul li {
+  color: rgba(230,230,230,0.9);
+  list-style: none;
+  padding: 15px 10px;
+  border-bottom: 1px solid rgba(100,100,100,0.3);
+
+.main_part {
+  padding: 0 0 0 260px;
+}
