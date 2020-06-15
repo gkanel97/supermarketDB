@@ -1,31 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-table {
-  font-family: sans-serif;
-  border-collapse: collapse;
-  table-layout: auto
-  width: 90%;
-}
-
-td {
-  border: 1px solid black;
-  text-align: left;
-  padding: 8px;
-}
-
-th {
-  border: 1px solid black;
-  text-align: center;
-  padding: 8px;
-  background-color: #dddddd;
-}
-</style>
-</head>
-<body>
-
-<h2>Shopping data statistic analysis</h2>
+{% extends "layout.html" %}
+{% block page_title %}Shopping habits analysis{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block text_title %}Shopping habits analysis{% endblock %}
+{% block main_part %}
 <h3>Select metric to show</h3>
 <div>
 <form method="POST" action="/shopping-stats">
@@ -90,7 +69,6 @@ th {
             </tr>
         {% endfor %}
     </table>
-</body>
 
 {% elif metric == 'fav_hour' %}
     <h3>Money spent per hour</h3>
@@ -124,3 +102,4 @@ th {
         {% endfor %}
     </table>
 {% endif %}
+{% endblock %}

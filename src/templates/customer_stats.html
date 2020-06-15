@@ -1,35 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-table {
-  font-family: sans-serif;
-  border-collapse: collapse;
-  table-layout: auto
-  width: 90%;
-}
-
-td {
-  border: 1px solid black;
-  text-align: left;
-  padding: 8px;
-}
-
-th {
-  border: 1px solid black;
-  text-align: center;
-  padding: 8px;
-  background-color: #dddddd;
-}
-</style>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
-</head>
-
-<body>
-
-<h2>Show statistics for a specific customer</h2>
+{% extends "layout.html" %}
+{% block page_title %}Customer profiling{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block text_title %}Profile statistics for a specific customer{% endblock %}
+{% block main_part %}
+  
 <h3>Select a customer</h3>
-
 <div>
 <form method="POST" action="/customer-stats">
     <label for="card_id">Insert customer card ID:</label>
@@ -163,5 +140,4 @@ th {
     </script></div>
 
 {% endif %}
-
-</body>
+{% endblock %}

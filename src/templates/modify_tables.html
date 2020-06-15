@@ -1,6 +1,10 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends "layout.html" %}
+{% block page_title %}Modify database{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block text_title %}Edit info stored at the database{% endblock %}
+{% block main_part %}
 
 <div>
 <h3>Select a table to modify and the desired action</h3>
@@ -8,39 +12,23 @@
     <input type="hidden" name="form_step" value="one">
     <select id="action_dropdown" name="select_action">
         <option value="" selected disabled hidden>Select an action</option>
-        <option value="insert"
-            {% if data['action'] == 'insert' %}
-                selected
-            {% endif %}
-        >Insert</option>
-        <option value="delete"
-            {% if data['action'] == 'delete' %}
-                selected
-            {% endif %}
-        >Delete</option>
-        <option value="modify"
-            {% if data['action'] == 'modify' %}
-                selected
-            {% endif %}
-        >Modify</option>
+        {% for a in ['insert', 'delete', 'modify'] %}
+            <option value="{{ a }}"
+                {% if data['action'] == a %}
+                    selected
+                {% endif %}
+            >{{ a|capitalize }}</option>
+       {% endfor %}
     </select>
     <select id="table_dropdown" name="select_table">
         <option value="" selected disabled hidden>Select a table</option>
-        <option value="Customer" 
-            {% if data['table'] == 'Customer' %}
-                selected
-            {% endif %}
-        >Customer</option>
-        <option value="Store"
-            {% if data['table'] == 'Store' %}
-                selected
-            {% endif %}
-        >Store</option>
-        <option value="Product"
-            {% if data['table'] == 'Product' %}
-                selected
-            {% endif %}
-        >Product</option>
+        {% for t in ['Customer', 'Product', 'Store'] %}
+            <option value="{{ t }}" 
+                {% if data['table'] == t %}
+                    selected
+                {% endif %}
+            >{{ t }}</option>
+        {% endfor %}
     </select>
     <input class="btn" type="submit" value="Select"><br><br>
 </form>
@@ -286,5 +274,4 @@
 
 </div>
 
-</body>
-</html>
+{% endblock %}

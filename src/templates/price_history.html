@@ -1,33 +1,12 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
+{% block page_title %}Price history{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block text_title %}Price history as a timeseries{% endblock %}
+{% block main_part %}
 
-<style>
-table {
-  font-family: sans-serif;
-  border-collapse: collapse;
-  table-layout: auto
-  width: 90%;
-}
-
-td {
-  border: 1px solid black;
-  text-align: left;
-  padding: 8px;
-}
-
-th {
-  border: 1px solid black;
-  text-align: center;
-  padding: 8px;
-  background-color: #dddddd;
-}
-</style>
-
-<body>
-
-<h2>Search for information in the database</h2>
-<h3>Select database table to present</h3>
-
+<h3>Select a product</h3>
 <div>
 <form method="POST" action="/price-history">
     <label for="barcode_input">Insert product barcode</label>
@@ -60,5 +39,4 @@ th {
 <div>
 {% endif %}
 
-</body>
-</html>
+{% endblock %}

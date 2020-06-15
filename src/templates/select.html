@@ -1,16 +1,17 @@
-<!DOCTYPE html>
-<html>
-<body>
-
-<h2>Search for information in the database</h2>
+{% extends "layout.html" %}
+{% block page_title %}Database presentation{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block text_title %}Search for information in the database{% endblock %}
+{% block main_part %}
 <h3>Select database table to present</h3>
-
 <div>
 <form method="POST" action="/select">
     <select id="table_dropdown" name="select_table">
         <option value="" selected disabled hidden>Select a table</option>
-        {% for t in table_names %}
-            {% if t == selected_table %}
+        {% for t in filters['tables'] %}
+            {% if t == filters['selected_table'] %}
                 <option value="{{ t }}" selected>{{ t }}</option>
             {% else %}
                 <option value="{{ t }}">{{ t }}</option>
@@ -20,15 +21,14 @@
     <input class="btn" type="submit" value="Select"><br><br>
 </form>
 </div>
-
 <div>
-{% if selected_table == 'Store' %}
+{% if filters['selected_table'] == 'Store' %}
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Store">
     <label for="store_dropdown">Select a specific store</label>
     <select id="store_dropdown" name="select_store">
         <option value="" selected disabled hidden>Select store</option>
-        {% for s in store_names %}
+        {% for s in filters['store_names'] %}
             <option value="{{ s }}">{{ s }}</option> 
         {% endfor %}
     </select><br>
@@ -43,7 +43,7 @@
 </form>
 {% endif %}
 
-{% if selected_table == 'Transaction' %}
+{% if filters['selected_table'] == 'Transaction' %}
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Transaction">
     <label for="transaction_id_field">Insert the transaction ID</label>
@@ -51,7 +51,7 @@
     <h4>Apply filters</h4>
     <select id="store_dropdown" name="select_store">
         <option value="" selected disabled hidden>Select store</option>
-        {% for s in store_names %}
+        {% for s in filters['store_names'] %}
             <option value="{{ s }}">{{ s }}</option> 
         {% endfor %}
     </select><br>
@@ -61,14 +61,18 @@
         <option value="credit_card">Credit card</option>
     </select><br>
     <label for="date_calender">Transaction date</label>
-    <input type="date" id="date_calender" name="shop_date" value="2019-01-01" min="2019-01-01" max="2020-05-31"><br>
+    <input type="date" id="date_calender" name="shop_date" min="2019-01-01" max="2020-05-31"><br>
     <label for="quantity_field">Total amount of pieces</label>
-    <input type="text" id="quantity_field" name="total_quantity"><br><br>
+    <input type="text" id="quantity_field" name="total_quantity"><br>
+    <label for="min_price_field">Transaction amount range</label>
+    <input type="text" id="min_price_field" name="min_price">
+    <label for="max_price_field">-</label>
+    <input type="text" id="max_price_field" name="max_price"><br><br>
     <input class="btn" type="submit" value="Search">
 </form>
 {% endif %}
 
-{% if selected_table == 'Product' %}
+{% if filters['selected_table'] == 'Product' %}
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Product">
     <label for="barcode_field">Insert barcode</label> 
@@ -76,7 +80,7 @@
     <label for="category_dropdown">Select by category</label>
     <select id="category_dropdown" name="select_category">
         <option value="" selected disabled hidden>Select product category</option>
-        {% for c in category_names %}
+        {% for c in filters['category_names'] %}
             <option value="{{ c }}">{{ c }}</option> 
         {% endfor %}
     </select><br><br>
@@ -84,14 +88,14 @@
 </form>
 {% endif %}
 
-{% if selected_table == 'Customer' %}
+{% if filters['selected_table'] == 'Customer' %}
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Customer">
     <label for="card_field">Insert card ID</label>
     <input type="text" id="card_field" name="card_id" minlength="8" maxlength="8">
     <h4>Apply filters</h4>
     <label for="reg_date_calender">Registration date</label>
-    <input type="date" id="reg_date_calender" name="reg_date" value="2019-01-01" min="2019-01-01" max="2020-04-30"><br>
+    <input type="date" id="reg_date_calender" name="reg_date" min="2019-01-01" max="2020-04-30"><br>
     <label for="pet_dropdown">Pet</label>
     <select id="pet_dropdown" name="select_pet">
         <option value="" selected disabled hidden>Select a pet</option>
@@ -105,3 +109,4 @@
 {% endif %}
 
 </div>
+{% endblock %}
