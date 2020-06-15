@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "<h2 style='color:green'>Database presentation homepage</h2>"
+    return render_template("homepage.html")
 
 @app.route("/modify-tables", methods = ['GET', 'POST'])
 def modify():
