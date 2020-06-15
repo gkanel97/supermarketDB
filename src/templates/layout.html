@@ -1,0 +1,29 @@
+<html>
+  <head>
+    {% block head %}
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+      <title>{% block page_title %}{% endblock %}</title>
+    {% endblock %}
+  </head>
+  <body>
+    <div class="sidebar">
+      <nav>
+        <ul>
+          <li><a href="{{ url_for('home') }}">Home</a></li>
+          <li><a href="{{ url_for('select') }}">Database presentation</a></li>
+          <li><a href="{{ url_for('customer_stats') }}">Customer statistics</a></li>
+          <li><a href="{{ url_for('shopping_stats') }}">Shopping statistics</a></li>
+          <li><a href="{{ url_for('modify') }}">Modify database</a></li>
+          <li><a href="{{ url_for('price_history') }}">Price history</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="text_title" style="margin-left: 270px">
+      <br>
+      <h2>{% block text_title %}{% endblock %}
+    </div>
+    <div class="main_part" style="margin-left: 270px; margin-right: 50px">
+      {% block main_part %}{% endblock %}
+    </div>
+  </body>
+</html>
