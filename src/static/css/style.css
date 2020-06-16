@@ -1,6 +1,22 @@
 body {
   margin: 0px;
-  font-family: sans-serif;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+h2 {
+  padding-top: 15px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  margin: 0px;
+}
+
+h3,
+h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  margin: 10px 0px;
 }
 
 a {
@@ -11,21 +27,69 @@ a {
 table {
   font-family: sans-serif;
   border-collapse: collapse;
-  table-layout: auto
-  width: 100%;
+  margin: 15px 0;
+  font-size: 0.9em;
+  min-width: 400px;
+  border-radius: 5px 5px 0 0;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-td {
-  border: 1px solid black;
+table thead tr {
+  background-color: #0d697de6;
+  color: #ffffff;
   text-align: left;
-  padding: 8px;
+  font-weight: bold;
 }
 
-th {
-  border: 1px solid black;
-  text-align: center;
-  padding: 8px;
-  background-color: #dddddd;
+table th,
+table td {
+  padding: 8px 5px;
+}
+
+table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+form label {
+  display: inline-block;
+  margin-right: 15px;
+  margin-bottom: 13px;
+  width: 250px;
+  font-size: 14px;
+}
+
+form input {
+  box-sizing: border-box;
+  border: 1px solid #dddddd;
+  box-shadow: 1px 1px 4px #ebebeb;
+  border-radius: 10px;
+  padding: 7px;
+  outline: none;
+}
+
+form input[type="text"] {
+  width: 300px;
+}
+
+form input[type="submit"] {
+  background-color: #0d697de6;
+  color: #ffffff;
+  padding: 8px 20px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+}
+
+select {
+  border-radius: 5px;
+  padding: 5px;
+  outline: none;
+  margin-right: 5px;
+  width: 150px;
 }
 
 .sidebar {
@@ -40,7 +104,4 @@ th {
   list-style: none;
   padding: 15px 10px;
   border-bottom: 1px solid rgba(100,100,100,0.3);
-
-.main_part {
-  padding: 0 0 0 260px;
 }

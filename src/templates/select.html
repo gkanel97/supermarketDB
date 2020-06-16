@@ -4,9 +4,9 @@
   {{ super() }}
 {% endblock %}
 {% block text_title %}Search for information in the database{% endblock %}
+
 {% block main_part %}
 <h3>Select database table to present</h3>
-<div>
 <form method="POST" action="/select">
     <select id="table_dropdown" name="select_table">
         <option value="" selected disabled hidden>Select a table</option>
@@ -18,95 +18,97 @@
             {% endif %}
         {% endfor %}
     </select>
-    <input class="btn" type="submit" value="Select"><br><br>
+    <input class="btn" type="submit" value="Select"><br>
 </form>
-</div>
-<div>
+
 {% if filters['selected_table'] == 'Store' %}
+<h4>Select a specific store or filter by location</h4>
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Store">
-    <label for="store_dropdown">Select a specific store</label>
+    <label for="store_dropdown">Store name</label>
     <select id="store_dropdown" name="select_store">
-        <option value="" selected disabled hidden>Select store</option>
+        <option value="" selected disabled hidden>-</option>
         {% for s in filters['store_names'] %}
             <option value="{{ s }}">{{ s }}</option> 
         {% endfor %}
     </select><br>
-    <label for="city_dropdown">Filter by location</label>
+    <label for="city_dropdown">City</label>
     <select id="city_dropdown" name="select_city">
-       <option value="" selected disabled hidden>Select a city</option>
+       <option value="" selected disabled hidden>-</option>
        <option value="Athens">Athens</option>
        <option value="Thessaloniki">Thessaloniki</option>
        <option value="Volos">Volos</option>
-    </select><br><br>
+    </select><br>
     <input class="btn" type="submit" value="Search">
 </form>
 {% endif %}
 
 {% if filters['selected_table'] == 'Transaction' %}
+<h4>Insert transaction ID to display a specific transaction or use the filters below</h4>
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Transaction">
-    <label for="transaction_id_field">Insert the transaction ID</label>
-    <input type="text" id="transaction_id_field" name="transaction_id" minlength="13" maxlength="13">
-    <h4>Apply filters</h4>
+    <label for="transaction_id_field">Transaction ID</label>
+    <input type="text" id="transaction_id_field" name="transaction_id" placeholder="13-digit number"><br>
+    <label for="store_dropdown">Store name</label>
     <select id="store_dropdown" name="select_store">
-        <option value="" selected disabled hidden>Select store</option>
+        <option value="" selected disabled hidden>-</option>
         {% for s in filters['store_names'] %}
             <option value="{{ s }}">{{ s }}</option> 
         {% endfor %}
     </select><br>
+    <label for="payment_dropdown">Payment method</label>
     <select id="payment_dropdown" name="payment_method">
-        <option value="" selected disabled hidden>Select payment method</option>
+        <option value="" selected disabled hidden>-</option>
         <option value="cash">Cash</option>
         <option value="credit_card">Credit card</option>
     </select><br>
     <label for="date_calender">Transaction date</label>
-    <input type="date" id="date_calender" name="shop_date" min="2019-01-01" max="2020-05-31"><br>
+    <input type="text" id="date_calender" name="shop_date" placeholder="YYYY-MM-DD"><br>
     <label for="quantity_field">Total amount of pieces</label>
     <input type="text" id="quantity_field" name="total_quantity"><br>
     <label for="min_price_field">Transaction amount range</label>
-    <input type="text" id="min_price_field" name="min_price">
-    <label for="max_price_field">-</label>
-    <input type="text" id="max_price_field" name="max_price"><br><br>
+    <input type="text" id="min_price_field" name="min_price" placeholder="Minimum amount"><br>
+    <label for="max_price_field" style="visibility: hidden;">Max</label>
+    <input type="text" id="max_price_field" name="max_price" placeholder="Maximum amount"><br>
     <input class="btn" type="submit" value="Search">
 </form>
 {% endif %}
 
 {% if filters['selected_table'] == 'Product' %}
+<h4>Select a specific barcode or display all products in a category</h4>
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Product">
-    <label for="barcode_field">Insert barcode</label> 
-    <input type="text" id="barcode_field" name="barcode" minlength="13" maxlength="13"><br>
-    <label for="category_dropdown">Select by category</label>
+    <label for="barcode_field">Product barcode</label> 
+    <input type="text" id="barcode_field" name="barcode" placeholder="13-digit number"><br>
+    <label for="category_dropdown">Product category</label>
     <select id="category_dropdown" name="select_category">
-        <option value="" selected disabled hidden>Select product category</option>
+        <option value="" selected disabled hidden>-</option>
         {% for c in filters['category_names'] %}
             <option value="{{ c }}">{{ c }}</option> 
         {% endfor %}
-    </select><br><br>
+    </select><br>
     <input class="btn" type="submit" value="Search">
 </form>
 {% endif %}
 
 {% if filters['selected_table'] == 'Customer' %}
+<h4>Insert card ID to display a specific customer or use the filters below</h4>
 <form method="POST" action="/presentation">
     <input type="hidden" name="select_table" value="Customer">
-    <label for="card_field">Insert card ID</label>
-    <input type="text" id="card_field" name="card_id" minlength="8" maxlength="8">
-    <h4>Apply filters</h4>
+    <label for="card_field">Card ID</label>
+    <input type="text" id="card_field" name="card_id" placeholder="8-digit number"><br>
     <label for="reg_date_calender">Registration date</label>
-    <input type="date" id="reg_date_calender" name="reg_date" min="2019-01-01" max="2020-04-30"><br>
+    <input type="text" id="reg_date_calender" name="reg_date" placeholder="YYYY-MM-DD"><br>
     <label for="pet_dropdown">Pet</label>
     <select id="pet_dropdown" name="select_pet">
-        <option value="" selected disabled hidden>Select a pet</option>
+        <option value="" selected disabled hidden>-</option>
         <option value="Dog">Dog</option>
         <option value="Cat">Cat</option>
         <option value="Parrot">Parrot</option>
         <option value="NULL">None</option>
-    </select><br><br>
+    </select><br>
     <input class="btn" type="submit" value="Search">
 </form>
 {% endif %}
 
-</div>
 {% endblock %}

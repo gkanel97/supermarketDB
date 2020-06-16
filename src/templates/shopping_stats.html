@@ -6,10 +6,10 @@
 {% block text_title %}Shopping habits analysis{% endblock %}
 {% block main_part %}
 <h3>Select metric to show</h3>
-<div>
 <form method="POST" action="/shopping-stats">
-    <select id="metric_dropdown" name="select_metric"><br>
-        <option value="" selected disabled hidden>Select metric</option>
+    <label for="metric_dropdown">Select a metric</label>
+    <select id="metric_dropdown" name="select_metric">
+        <option value="" selected disabled hidden>-</option>
         <option value="fav_pairs">Product pairs usually bought together</option>
         <option value="fav_spot">Shelves with most purchases</option>
         <option value="label_pop">Label popularity per category</option>
@@ -17,16 +17,18 @@
     </select><br>
     <input type="submit" value="Show statistics">
 </form>
-</div>
 
 {% if metric == 'fav_pairs' %}
     <h3>Favorite pairs</h3>
     <table>
+      <thead>
         <tr>
             {% for header in data['fav_pairs']['headers'] %}
                 <th> {{ header|capitalize }} </th>
             {% endfor %}
         </tr>
+      </thead>
+      <tbody>  
         {% for row in data['fav_pairs']['values'] %}
             <tr>
                 {% for cell in row %}
@@ -34,16 +36,20 @@
                 {% endfor %}
             </tr>
         {% endfor %}
+      </tbody>
     </table>
 
 {% elif metric == 'fav_spot' %}
     <h3>Best spot to place products</h3>
     <table>
+      <thead>
         <tr>
             {% for header in data['fav_spot']['headers'] %}
                 <th> {{ header|capitalize }} </th>
             {% endfor %}
         </tr>
+      </thead>
+      <tbody>  
         {% for row in data['fav_spot']['values'] %}
             <tr>
                 {% for cell in row %}
@@ -51,16 +57,20 @@
                 {% endfor %}
             </tr>
         {% endfor %}
+      </tbody>
     </table>
 
 {% elif metric == 'label_pop' %}
     <h3>Label popularity per product category</h3>
     <table>
+      <thead>
         <tr>
             {% for header in data['label_pop']['headers'] %}
                 <th> {{ header|capitalize }} </th>
             {% endfor %}
         </tr>
+      </thead>
+      <tbody>  
         {% for row in data['label_pop']['values'] %}
             <tr>
                 {% for cell in row %}
@@ -68,16 +78,20 @@
                 {% endfor %}
             </tr>
         {% endfor %}
+      </tbody>
     </table>
 
 {% elif metric == 'fav_hour' %}
     <h3>Money spent per hour</h3>
     <table>
+      <thead>
         <tr>
             {% for header in data['money_hour']['headers'] %}
                 <th> {{ header|capitalize }} </th>
             {% endfor %}
         </tr>
+      </thead>
+      <tbody>  
         {% for row in data['money_hour']['values'] %}
             <tr>
                 {% for cell in row %}
@@ -85,14 +99,18 @@
                 {% endfor %}
             </tr>
         {% endfor %}
+      </tbody>
     </table>
     <h3>Visits per age group and hour</h3>
     <table>
+      <thead>
         <tr>
             {% for header in data['age_hour']['headers'] %}
                 <th> {{ header|capitalize }} </th>
             {% endfor %}
         </tr>
+      </thead>
+      <tbody>  
         {% for row in data['age_hour']['values'] %}
             <tr>
                 {% for cell in row %}
@@ -100,6 +118,7 @@
                 {% endfor %}
             </tr>
         {% endfor %}
+      </tbody>
     </table>
 {% endif %}
 {% endblock %}

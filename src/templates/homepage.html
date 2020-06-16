@@ -1,11 +1,9 @@
 {% extends "layout.html" %}
+{% block page_title %}Database web app{% endblock %}
 {% block head %}
-  <title>Database web app</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {{ super() }}
 {% endblock %}
-{% block text_title %}
-  Supermarket database web application
-{% endblock %}
+{% block text_title %}Supermarket database web application{% endblock %}
 {% block main_part %}
   <p>This is a web application that aims at storing, managing and analysing the data gathered by a supermarket chain. Data about the stores, the customers, the transactions and the products are stored at the database. The web application offers the following functionalities:</p>
   <ul>

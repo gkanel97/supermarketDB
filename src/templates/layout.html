@@ -2,6 +2,7 @@
   <head>
     {% block head %}
       <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400">
       <title>{% block page_title %}{% endblock %}</title>
     {% endblock %}
   </head>
@@ -19,8 +20,7 @@
       </nav>
     </div>
     <div class="text_title" style="margin-left: 270px">
-      <br>
-      <h2>{% block text_title %}{% endblock %}
+      <h2>{% block text_title %}{% endblock %}</h2>
     </div>
     <div class="main_part" style="margin-left: 270px; margin-right: 50px">
       {% block main_part %}{% endblock %}

@@ -30,7 +30,7 @@
             >{{ t }}</option>
         {% endfor %}
     </select>
-    <input class="btn" type="submit" value="Select"><br><br>
+    <input class="btn" type="submit" value="Select"><br>
 </form>
 </div>
 
@@ -41,18 +41,19 @@
     <input type="hidden" name="select_action" value="{{ data['action'] }}">
     <input type="hidden" name="select_table" value="{{ data['table'] }}">
     {% if data['table'] == 'Customer' %}
+        <h4>Select a customer by card ID or name</h4>
         <label for="card_id">Card ID</label>
-        <input type="text" id="card_id" name="insert_card"><br>
-        <label for="customer_name">Or insert customer name</label>
-        <input type="text" id="customer_name" name="insert_name">
+        <input type="text" id="card_id" name="insert_card" placeholder="8-digit number"><br>
+        <label for="customer_name">Customer name</label>
+        <input type="text" id="customer_name" name="insert_name"><br>
      {% elif data['table'] == 'Store' %}
-        <label for="store_id">Insert store ID</label>
-        <input type="text" id="store_id" name="insert_store_id">
+        <label for="store_id">Store ID</label>
+        <input type="text" id="store_id" name="insert_store_id"><br>
      {% elif data['table'] == 'Product' %}
-        <label for="barcode">Insert product barcode</label>
-        <input type="text" id="barcode" name="insert_barcode"> 
+        <label for="barcode">Product barcode</label>
+        <input type="text" id="barcode" name="insert_barcode" placeholder="13-digit number"><br>
      {% endif %}
-     <input class="btn" type="submit" value="Search"><br><br>
+     <input class="btn" type="submit" value="Search"><br>
      </form>
 
      {% if step == 'four' and data['action'] == 'modify' %}
@@ -74,7 +75,7 @@
                      <label for={{ d }}>{{ d }}</label>
                      <input type="text" id={{ d }} name="insert_{{ d }}" value="{{ data[d] }}"><br>
                  {% endfor %}
-                 <br><input class="btn" type="submit" value="Modify"><br> 
+                 <input class="btn" type="submit" value="Modify"><br> 
                  </form>
              {% endif %}
 
@@ -93,7 +94,7 @@
                      <label for={{ d }}>{{ d }}</label>
                      <input type="text" id={{ d }} name="insert_{{ d }}" value="{{ data[d] }}"><br>
                  {% endfor %}
-                 <br><input class="btn" type="submit" value="Modify"><br>
+                 <input class="btn" type="submit" value="Modify"><br>
                  </form>
              {% endif %}
 
@@ -112,7 +113,7 @@
                      <label for={{ d }}>{{ d }}</label>
                      <input type="text" id={{ d }} name="insert_{{ d }}" value="{{ data[d] }}"><br>
                  {% endfor %}
-                 <br><input class="btn" type="submit" value="Modify"><br>
+                 <input class="btn" type="submit" value="Modify"><br>
                  </form>
              {% endif %}
 
@@ -178,11 +179,11 @@
         <input type="hidden" name="select_action" value="insert">
         <input type="hidden" name="select_table" value="Customer">
         <label for="card_id">Card ID</label>
-        <input type="text" id="card_id" name="insert_card_id"><br>
+        <input type="text" id="card_id" name="insert_card_id" placeholder="8-digit number"><br>
         <label for="customer name">Customer name</label>
         <input type="text" id="customer_name" name="insert_customer_name"><br>
         <label for="dob_calender">Date of Birth</label>
-        <input type="date" id="dob_calender" name="insert_date_of_birth"><br>
+        <input type="text" id="dob_calender" name="insert_date_of_birth" placeholder="YYYY-MM-DD"><br>
         <label for="sex_dropdown">Sex</label>
         <select id="sex_dropdown" name="insert_sex">
             <option value="" selected disabled hidden>-</option>
@@ -198,13 +199,13 @@
             <option value="">None</option>
         </select><br>
         <label for="street">Street</label>
-        <input type="text" id="street" name="insert_street_name">
+        <input type="text" id="street" name="insert_street_name"><br>
         <label for="street_no">Number</label>
-        <input type="text" id="street_no" name="insert_street_number">
+        <input type="text" id="street_no" name="insert_street_number"><br>
         <label for="postal_code">Postal code</label>
-        <input type="text" id="postal_code" name="insert_postal_code">
+        <input type="text" id="postal_code" name="insert_postal_code"><br>
         <label for="city">City</label>
-        <input type="text" id="city" name="insert_city"><br><br>
+        <input type="text" id="city" name="insert_city"><br>
         <input class="btn" type="submit" value="Insert">
         </form>
 
@@ -215,7 +216,7 @@
         <input type="hidden" name="select_action" value="insert">
         <input type="hidden" name="select_table" value="Product">
         <label for="barcode">Barcode</label>
-        <input type="text" id="barcode" name="insert_barcode"><br>
+        <input type="text" id="barcode" name="insert_barcode" placeholder="13-digit number"><br>
         <label for="product_name">Product name</label>
         <input type="text" id="product_name" name="insert_product_name"><br>
         <label for="price">Price</label>
@@ -235,7 +236,7 @@
             <option value="" selected disabled hidden>-</option>
             <option value="1">Yes</option>
             <option value="0">No</option>
-        </select><br><br>
+        </select><br>
         <input class="btn" type="submit" value="Insert">
         </form>
 
@@ -258,7 +259,7 @@
         <label for="area">Store area in square meters</label>
         <input type="text" id="area" name="insert_area"><br>
         <label for="opening_hours">Opening hours</label>
-        <input type="text" id="opening_hours" name="insert_opening_hours"><br><br>
+        <input type="text" id="opening_hours" name="insert_opening_hours"><br>
         <input class="btn" type="submit" value="Insert">
         </form>
     

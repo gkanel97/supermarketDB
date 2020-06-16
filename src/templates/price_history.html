@@ -9,8 +9,8 @@
 <h3>Select a product</h3>
 <div>
 <form method="POST" action="/price-history">
-    <label for="barcode_input">Insert product barcode</label>
-    <input type="text" id="barcode_input" name="insert_barcode" min_length="13" max_length="13"><br><br>
+    <label for="barcode_input">Product barcode</label>
+    <input type="text" id="barcode_input" name="insert_barcode" placeholder="13-digit number" min_length="13" max_length="13"><br>
     <input class="btn" type="submit" value="Search">
 </form>
 </div>
@@ -18,15 +18,18 @@
 {% if data != None %}
 <div>
     {% if data['description'] == None %} 
-        <h4>There is no registered product with barcode  = {{ data['barcode'] }}</h4>
+        <h4>There is no registered product with barcode = {{ data['barcode'] }}</h4>
     {% else %}
-        <h3>Price history for product {{ data['description'] }} with barcode = {{ data['barcode'] }}</h3>
+        <h4>Price history for product "{{ data['description'] }}" with barcode = {{ data['barcode'] }}</h4>
         <table>
+          <thead>
             <tr>
                 {% for header in data['headers'] %}
                     <th> {{ header|capitalize }} </th>
                 {% endfor %}
             </tr>
+          </thead>
+          <tbody>
             {% for row in data['values'] %}
                 <tr>
                     {% for cell in row %}
@@ -34,6 +37,7 @@
                     {% endfor %}
                 </tr>
             {% endfor %}
+          </tbody>
         </table>
     {% endif %}
 <div>
