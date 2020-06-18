@@ -3,6 +3,7 @@
     {% block head %}
       <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400">
+      {% block js %}{% endblock %}
       <title>{% block page_title %}{% endblock %}</title>
     {% endblock %}
   </head>
@@ -16,6 +17,7 @@
           <li><a href="{{ url_for('shopping_stats') }}">Shopping statistics</a></li>
           <li><a href="{{ url_for('modify') }}">Modify database</a></li>
           <li><a href="{{ url_for('price_history') }}">Price history</a></li>
+          <li><a href="{{ url_for('views') }}">Views</a></li>
         </ul>
       </nav>
     </div>
