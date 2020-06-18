@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block page_title %}Database views{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block text_title %}Present a view of the database{% endblock %}
+
+{% block main_part %}
+<h3>Select a database view to present</h3>
+<form method="POST" class="radio-form" action="/views">
+    <input type="radio" id="category_share_per_store_view" name="select_view" value="category_share_per_store_view">
+    <label for="category_share_per_store_view">View of sales per product category and store</label><br>
+    <input type="radio" id="customer_view" name="select_view" value="customer_view">
+    <label for="customer_view">View of customers</label><br>
+    <input type=submit value="Select">
+</form>
+{% endblock %}
