@@ -1,25 +1,30 @@
 {% extends "layout.html" %}
 {% block page_title %}Customer profiling{% endblock %}
+{% block js %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+{% endblock %}
 {% block head %}
   {{ super() }}
 {% endblock %}
 {% block text_title %}Profile statistics for a specific customer{% endblock %}
 {% block main_part %}
   
-<h3>Select a customer</h3>
 <div>
+<h4>Select a customer by card ID or by name</h4>
 <form method="POST" action="/customer-stats">
-    <label for="card_id">Insert customer card ID:</label>
+    <label for="card_id">Customer card ID</label>
     <input type="text" id="card_id" name="insert_card"><br>
-    <label for="customer_name">Alternatively insert customer name:</label>
-    <input type="text" id="customer_name" name="insert_name">
-    <input type="submit" value="Show statistics">
+    <label for="customer_name">Customer name</label>
+    <input type="text" id="customer_name" name="insert_name"><br>
+    <input type="submit" value="Show statistics"><br>
 </form>
 </div>
 
 {% if customer != None and data == None %}
 <div>
-    {% if customer['name'] != None %}
+    {% if customer['name'] != None and customer['card_id'] != None %}
+        <h4>There are no data for customer "{{ customer['customer_name'] }}" with card ID = {{ customer['card_id'] }}</h4>
+    {% elif customer['name'] != None %}
         <h4>There is no registered customer with name "{{ customer['customer_name'] }}"</h4>
     {% elif customer['card_id'] != None %}
         <h4>There is no registered customer with card ID = {{ customer['card_id'] }}</h4>
@@ -61,83 +66,71 @@
         {% endfor %}
     </table></div>
 
-    <div><h4>Total amount per week</h4>
-    <table>
-        <tr>
-            {% for header in data['week_avg']['headers'] %}
-                <th> {{ header|capitalize }} </th>
+    <div>
+    <canvas id="chart-week" width="600" height="300"></canvas>
+    <script type="text/javascript">
+        var chartLabels = [
+            {% for tuple in data['week_avg']['table'] %}
+                String({{ tuple[0] }}) + "-" + String({{ tuple[1] }}),
             {% endfor %}
-        </tr>
-        {% for row in data['week_avg']['table'] %}
-            <tr>
-            {% for cell in row %}
-                <td> {{ cell }} </td>
+            ]
+        var chartData = [
+            {% for tuple in data['week_avg']['table'] %}
+                {{ tuple[2] }},
             {% endfor %}
-            </tr>
-        {% endfor %}
-    </table></div>
-
-    <div><h4>Total amount per month</h4>
-    <table>
-        <tr>
-            {% for header in data['month_avg']['headers'] %}
-                <th> {{ header|capitalize }} </th>
-            {% endfor %}
-        </tr>
-        {% for row in data['month_avg']['table'] %}
-            <tr>
-            {% for cell in row %}
-                <td> {{ cell }} </td>
-            {% endfor %}
-            </tr>
-        {% endfor %}
-    </table></div>
-
-
-    <div><h4>Shopping frequency by hour</h4>
-    <canvas id="chart" width="600" height="400"></canvas>
-    <script>
-      // bar chart data
-      var barData = {
-        labels : [
-          {% for item in data['fav_hour']['labels'] %}
-           "{{ item }}",
-          {% endfor %}
-	],
-
-        datasets : [{
-          fillColor: "rgba(151,187,205,0.2)",
-          strokeColor: "rgba(151,187,205,1)",
-          pointColor: "rgba(151,187,205,1)",
-          data : [
-            {% for item in data['fav_hour']['values'] %}
-               "{{ item }}",
-              {% endfor %}
-	    ]
-          }
         ]
-      }
+        var chartTitle = "Money spent per week"
+        var xLabel = "Week"
+        var yLabel = "Amount"
+        var maxVal = 0
+        {% for tuple in data['week_avg']['table'] %}
+            maxVal = Math.max(maxVal, {{ tuple[2] }})
+        {% endfor %}
+        var canvasID = "chart-week"
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/bar_chart.js') }}"></script>
+    <div>
 
-     // get bar chart canvas
-     var mychart = document.getElementById("chart").getContext("2d");
+    <div>
+    <canvas id="chart-month" width="600" height="300"></canvas>
+    <script type="text/javascript">
+        var chartLabels = [
+            {% for tuple in data['month_avg']['table'] %}
+                String({{ tuple[0] }}) + "-" + String({{ tuple[1] }}),
+            {% endfor %}
+            ]
+        var chartData = [
+            {% for tuple in data['month_avg']['table'] %}
+                {{ tuple[2] }},
+            {% endfor %}
+        ]
+        var chartTitle = "Money spent per month"
+        var xLabel = "Month"
+        var yLabel = "Amount"
+        var maxVal = 0
+        {% for tuple in data['month_avg']['table'] %}
+            maxVal = Math.max(maxVal, {{ tuple[2] }})
+        {% endfor %} 
+        var canvasID = "chart-month"
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/bar_chart.js') }}"></script>
+    <div>
 
-       steps = 10
-       max = {{ data['fav_hour']['max'] }}
-
-     // draw bar chart
-     new Chart(mychart).Bar(barData, {
-       scaleOverride: true,
-       scaleSteps: steps,
-       scaleStepWidth: Math.ceil(max / steps),
-       scaleStartValue: 0,
-       scaleShowVerticalLines: true,
-       scaleShowGridLines : true,
-       barShowStroke : true,
-       scaleShowLabels: true
-       }
-     );
-
-    </script></div>
+    <div>
+    <canvas id="chart-hour" width="600" height="300"></canvas>
+    <script type="text/javascript">
+        var chartLabels = [...Array(24).keys()]
+        var chartData = new Array(24).fill(0)
+        {% for tuple in data['fav_hour']['table'] %}
+            chartData[{{ tuple[1] }}] = {{ tuple[0] }}
+        {% endfor %}
+        var chartTitle = "Shopping frequency by hour"
+        var xLabel = "Hours of the day"
+        var yLabel = "Percentage of total visits"
+        var canvasID = "chart-hour"
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/bar_chart.js') }}"></script>
+    </div>
 
 {% endif %}
 {% endblock %}

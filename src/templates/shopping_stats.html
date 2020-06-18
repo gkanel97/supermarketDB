@@ -1,25 +1,32 @@
 {% extends "layout.html" %}
 {% block page_title %}Shopping habits analysis{% endblock %}
+{% block js %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+{% endblock %}
 {% block head %}
   {{ super() }}
 {% endblock %}
 {% block text_title %}Shopping habits analysis{% endblock %}
 {% block main_part %}
-<h3>Select metric to show</h3>
-<form method="POST" action="/shopping-stats">
-    <label for="metric_dropdown">Select a metric</label>
-    <select id="metric_dropdown" name="select_metric">
-        <option value="" selected disabled hidden>-</option>
-        <option value="fav_pairs">Product pairs usually bought together</option>
-        <option value="fav_spot">Shelves with most purchases</option>
-        <option value="label_pop">Label popularity per category</option>
-        <option value="fav_hour">Visits per hour</option>
-    </select><br>
-    <input type="submit" value="Show statistics">
-</form>
+
+{% if step == 'zero' %}
+    <h4>Select metric to show</h4>
+    <form method="POST" action="/shopping-stats">
+        <input type="hidden" name="form_step" value="one">
+        <label for="metric_dropdown">Select a metric</label>
+        <select id="metric_dropdown" name="select_metric">
+            <option value="" selected disabled hidden>-</option>
+            <option value="fav_pairs">Product pairs usually bought together</option>
+            <option value="fav_spot">Shelves with most purchases</option>
+            <option value="label_pop">Label popularity per category</option>
+            <option value="fav_hour">Visits per hour</option>
+        </select><br>
+        <input type="submit" value="Proceed">
+    </form>
+{% endif %}
 
 {% if metric == 'fav_pairs' %}
-    <h3>Favorite pairs</h3>
+    <h4>Favorite pairs</h4>
     <table>
       <thead>
         <tr>
@@ -40,85 +47,131 @@
     </table>
 
 {% elif metric == 'fav_spot' %}
-    <h3>Best spot to place products</h3>
-    <table>
-      <thead>
-        <tr>
-            {% for header in data['fav_spot']['headers'] %}
-                <th> {{ header|capitalize }} </th>
-            {% endfor %}
-        </tr>
-      </thead>
-      <tbody>  
-        {% for row in data['fav_spot']['values'] %}
-            <tr>
-                {% for cell in row %}
-                    <td> {{ cell }} </td>
+    {% if step == 'two' %}
+        <h4>Select a store to display shelves with most purchases</h4>
+        <form method="POST" action="/shopping-stats">
+            <input type="hidden" name="form_step" value="three">
+            <input type="hidden" name="select_metric" value="{{ metric }}">
+            <label for="store_dropdown">Store</label>
+            <select id="store_dropdown" name="select_store">
+                <option value="" selected disabled hidden>-</option>
+                {% for store in data %}
+                    <option value="{{ store[0] }}">{{ store[1] }}</option>
                 {% endfor %}
-            </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            </select><br>
+            <input type="submit" value="Show statistics">
+        </form>
+    {% else %} 
+        <h4>Purchase share per shelf</h4>
+        {% if data['fav_spot']['values'][0][1] == None %}
+            <p>The chosen store '{{ data['store'] }}' does not store information about purchases per shelf<p>
+        {% else %}
+        <canvas id="chart-shelf" width=600 height=300></canvas>
+        <script type="text/javascript">
+            var chartLabels = [
+                {% for tuple in data['fav_spot']['values'] %}
+                    String({{ tuple[1] }}) + "." + String({{ tuple[2] }}),
+                {% endfor %}
+                ]
+            var chartData = [
+                {% for tuple in data['fav_spot']['values'] %}
+                    {{ tuple[3] }},
+                {% endfor %}
+            ]
+            var chartTitle = "Purchase share per shelf in store '{{ data['store'] }}'"
+            var xLabel = "Aisle.Shelf"
+            var yLabel = "Shelf share (%)"
+            var canvasID = "chart-shelf"
+        </script>
+        <script type="text/javascript" src="{{ url_for('static', filename='javascript/bar_chart.js') }}"></script>
+        {% endif %}
+    {% endif %}
 
 {% elif metric == 'label_pop' %}
-    <h3>Label popularity per product category</h3>
-    <table>
-      <thead>
-        <tr>
-            {% for header in data['label_pop']['headers'] %}
-                <th> {{ header|capitalize }} </th>
+    <canvas id="chart-label" width="600" height="300"></canvas>
+    <script type="text/javascript">
+        var labeled = [
+            {% for tuple in data['label_pop']['values'] %}
+                {% if tuple[1] == 1 %}
+                    {{ tuple[2] }},
+                {% endif %}
             {% endfor %}
-        </tr>
-      </thead>
-      <tbody>  
-        {% for row in data['label_pop']['values'] %}
-            <tr>
-                {% for cell in row %}
-                    <td> {{ cell }} </td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        ]
+        var unlabeled = [
+            {% for tuple in data['label_pop']['values'] %}
+                {% if tuple[1] == 0 %}
+                    {{ tuple[2] }},
+                {% endif %}
+            {% endfor %}
+        ]
+        var chartLabels = ["Fresh", "Refrigerated", "Liquor", "Care", "Homeware", "Pet"]
+        var chartTitle = "Label popularity by category"
+        var xLabel = "Product category"
+        var yLabel = "Market share"
+        var canvasID = "chart-label"
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/label_chart.js') }}"></script>
 
 {% elif metric == 'fav_hour' %}
-    <h3>Money spent per hour</h3>
-    <table>
-      <thead>
-        <tr>
-            {% for header in data['money_hour']['headers'] %}
-                <th> {{ header|capitalize }} </th>
-            {% endfor %}
-        </tr>
-      </thead>
-      <tbody>  
-        {% for row in data['money_hour']['values'] %}
-            <tr>
-                {% for cell in row %}
-                    <td> {{ cell }} </td>
+
+    {% if step == 'two' %}
+        <h4>Select a store to display when most purchases are done</h4>
+        <form method="POST" action="/shopping-stats">
+            <input type="hidden" name="form_step" value="three">
+            <input type="hidden" name="select_metric" value="{{ metric }}">
+            <label for="store_dropdown">Store</label>
+            <select id="store_dropdown" name="select_store">
+                <option value="" selected disabled hidden>-</option>
+                {% for store in data %}
+                    <option value="{{ store[0] }}">{{ store[1] }}</option>
                 {% endfor %}
-            </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <h3>Visits per age group and hour</h3>
-    <table>
-      <thead>
-        <tr>
-            {% for header in data['age_hour']['headers'] %}
-                <th> {{ header|capitalize }} </th>
-            {% endfor %}
-        </tr>
-      </thead>
-      <tbody>  
-        {% for row in data['age_hour']['values'] %}
-            <tr>
-                {% for cell in row %}
-                    <td> {{ cell }} </td>
+            </select><br>
+            <input type="submit" value="Show statistics">
+        </form>
+    {% else %}
+        <h3>Visits per age group and hour</h3>
+        <canvas id="chart-time" width=600 height=300></canvas>
+        <script type="text/javascript">
+            var chartLabels = [
+                {% for tuple in data['money_hour']['values'] %}
+                    {{ tuple[1] }},
                 {% endfor %}
-            </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+                ]
+            var chartData = [
+                {% for tuple in data['money_hour']['values'] %}
+                    {{ tuple[2] }},
+                {% endfor %}
+            ]
+            var chartTitle = "Average amount spent per opening hour in store '{{ data['store'] }}'"
+            var xLabel = "Opening hours"
+            var yLabel = "Total amount share (%)"
+            var canvasID = "chart-time"
+        </script>
+        <script type="text/javascript" src="{{ url_for('static', filename='javascript/bar_chart.js') }}"></script>
+   
+        <canvas id="chart-age" width=600 height=300></canvas>
+        <script type="text/javascript">
+            var chartLabels = [...Array(24).keys()]
+            var dataObj = {}
+            {% for tuple in data['age_hour']['values'] %}
+                if (!dataObj.hasOwnProperty({{ tuple[0] }})) {
+                    dataObj[{{ tuple[0] }}] = new Array(24).fill(0)
+                }
+                dataObj[{{ tuple[0] }}][{{ tuple[1] }}] = {{ tuple[2] }}
+            {% endfor %}
+            console.log(dataObj)
+            var chartData = [
+                {% for tuple in data['money_hour']['values'] %}
+                    {{ tuple[2] }},
+                {% endfor %}
+            ]
+            var chartTitle = "Hourly distribution of spent amount per age in store '{{ data['store'] }}'"
+            var xLabel = "Opening hours"
+            var yLabel = "Percentage of total amount (%)"
+            var canvasID = "chart-age"
+        </script>
+        <script type="text/javascript" src="{{ url_for('static', filename='javascript/multi_line.js') }}"></script>
+    {% endif %}
+
 {% endif %}
 {% endblock %}
