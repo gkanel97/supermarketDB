@@ -20,6 +20,8 @@
             <option value="fav_spot">Shelves with most purchases</option>
             <option value="label_pop">Label popularity per category</option>
             <option value="fav_hour">Visits per hour</option>
+            <option value="area">Average transaction amount vs postal code</option>
+            <option value="pet_amount">Average transaction amount vs pet</option>
         </select><br>
         <input type="submit" value="Proceed">
     </form>
@@ -133,12 +135,12 @@
         <canvas id="chart-time" width=600 height=300></canvas>
         <script type="text/javascript">
             var chartLabels = [
-                {% for tuple in data['money_hour']['values'] %}
+                {% for tuple in data['fav_hour']['values'] %}
                     {{ tuple[1] }},
                 {% endfor %}
                 ]
             var chartData = [
-                {% for tuple in data['money_hour']['values'] %}
+                {% for tuple in data['fav_hour']['values'] %}
                     {{ tuple[2] }},
                 {% endfor %}
             ]
@@ -161,7 +163,7 @@
             {% endfor %}
             console.log(dataObj)
             var chartData = [
-                {% for tuple in data['money_hour']['values'] %}
+                {% for tuple in data['age_hour']['values'] %}
                     {{ tuple[2] }},
                 {% endfor %}
             ]
@@ -172,6 +174,46 @@
         </script>
         <script type="text/javascript" src="{{ url_for('static', filename='javascript/multi_line.js') }}"></script>
     {% endif %}
+
+{% elif metric == 'area' %}
+    <canvas id="chart-area" width="600" height="300"></canvas>
+    <script type="text/javascript">
+        var chartLabels = [
+            {% for tuple in data['area']['values'] %}
+                {{ tuple[0] }},
+            {% endfor %}
+        ]
+        var chartData = [
+            {% for tuple in data['area']['values'] %}
+                {{ tuple[1] }},
+            {% endfor %}
+        ]
+        var chartTitle = "Average transaction amount per postal code area"
+        var xLabel = "Postal code"
+        var yLabel = "Average amount"
+        var canvasID = "chart-area"
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/bar_chart.js') }}"></script>
+
+{% elif metric == 'pet_amount' %}
+    <canvas id="chart-pet" width="600" height="300"></canvas>
+    <script type="text/javascript">
+        var chartLabels = [
+            {% for tuple in data['pet_amount']['values'] %}
+                "{{ tuple[0] }}",
+            {% endfor %}
+        ]
+        var chartData = [
+            {% for tuple in data['pet_amount']['values'] %}
+                {{ tuple[1] }},
+            {% endfor %}
+        ]
+        var chartTitle = "Average transaction amount vs pet ownership"
+        var xLabel = "Pet"
+        var yLabel = "Average amount"
+        var canvasID = "chart-pet"
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/bar_chart.js') }}"></script>
 
 {% endif %}
 {% endblock %}
