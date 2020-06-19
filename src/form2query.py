@@ -35,12 +35,13 @@ def update(form_data, table):
 
     for field_name, field_info in form_data.items():
         temp = request.form.get("insert_" + field_name)
-        if temp != "" and temp != None:
+        if temp != "" and temp != None and temp != 'None':
             field_info['value'] = temp
 
     query_str = "UPDATE " + table + " SET "
     for field_name, field_info in form_data.items():
         if field_info['value'] != None:
+            print(field_name, field_info['value'])
             if field_info['type'] in ['str', 'date']:
                 query_str += field_name + " = '" + field_info['value'] + "', "
             else:
