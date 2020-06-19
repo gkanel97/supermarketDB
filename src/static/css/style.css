@@ -92,6 +92,31 @@ select {
   width: 150px;
 }
 
+#chart-week,
+#chart-age,
+#chart-time {
+  max-width: 1000px;
+}
+
+#chart-month,
+#chart-pet {
+  max-width: 700px;
+}
+
+#chart-hour {
+  max-width: 800px;
+}
+
+#chart-label,
+#chart-shelf,
+#chart-area {
+  max-width: 900px;
+}
+
+.radio-form label {
+  width: 500px;
+}
+
 .sidebar {
   position: fixed;
   width: 250px;
