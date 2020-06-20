@@ -178,14 +178,13 @@ def price_history():
         data_dict = {}
         data_dict['barcode'] = selected_barcode
         description = query.get_one_col("SELECT product_name FROM Product WHERE barcode = {}".format(selected_barcode))         
-        print(description)
         if not description:
             data_dict['description'] = None
         else:
             data_dict['description'] = description[0]
 
         data_dict['headers'] = ['start date', 'end date', 'amount']
-        data_dict['values'] = query.get_table("SELECT start_date, end_date, amount " +
+        data_dict['values'] = query.get_table("SELECT DATE(start_date), DATE(end_date), amount " +
                                               "FROM Price " +
                                               "WHERE barcode = {}".format(selected_barcode))
 
