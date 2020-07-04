@@ -26,6 +26,20 @@ def views():
 @app.route("/modify-tables", methods = ['GET', 'POST'])
 def modify():
 
+    '''
+        The "modify" form has 6 steps:
+        - "zero" : Initial form state. User selects the desired table and action (frontend)
+        - "one"  : User has selected table and action (backend)
+        - "two"  : User inserts required data depending on selected table and action (frontend)
+        - "three": For "insert" action new data is inserted to the database
+                   For "modify" and "delete" search according to form data
+        - "four" : For "modify" user changes old data on the form
+                   For "delete" user verifies deletion
+        - "five" : Modify or delete database entry (backend)
+        - "done: : Action completed successfully (frontend prints "done" message)
+        - "error": An error occured (frontend prints error message)
+    '''
+    
     data_dict = {}
 
     if request.method == 'GET':
@@ -193,6 +207,23 @@ def price_history():
 @app.route("/shopping-stats", methods = ['GET', 'POST'])
 def shopping_stats():
 
+    '''
+        Available metrics:
+        - 'fav_pairs': Pairs of products usually bought together (eg cheese and ham)
+        - 'fav_spot': The most popular shelves in the supermarket
+        - 'label_pop': Popularity of supermarket-manufactured products per category
+        - 'fav_hour': Distribution of transactions per opening hour
+        - 'area': Average transaction amount per customer's postal code
+        - 'pet_amount': Average transaction amount per pet ownership
+
+        The form has 3 steps:
+        - step "zero" : User selects one of the available metrics (frontend)
+        - step "one"  : Query the database and return results (backend)
+        - step "two"  : Present the results or ask for more data based on previous query (frontend)
+        - step "three": Query the database again (not needed for all metrics - backend) 
+        - step "four" : Present the results (not needed for all metrics - frontend)
+    '''
+
     if request.method == 'GET':
        return render_template("shopping_stats.html", metric = None, data = None, step = 'zero')
 
@@ -295,6 +326,16 @@ def shopping_stats():
 @app.route("/customer-stats", methods = ['GET', 'POST'])
 def customer_stats():
 
+    '''
+        Returns statistics about a customer's shopping behaviour
+        Searching for a specific customer is done by card ID or customer name
+        The following metrics are calculated:
+        - Most frequently bought products
+        - Stores the customer shops from
+        - Distribution of money spent against opening hours
+        - Total amount spent per week and month 
+    '''
+
     customer_dict = {}
     data_dict = {}
 
@@ -352,14 +393,6 @@ def customer_stats():
         print(query_str)
         visit_per_hour = query.get_table(query_str)
 
-        query_str = ("SELECT SUM(total_amount) * 100.0 / SUM(SUM(total_amount)) OVER () AS share_per_dt, HOUR(timestamp) AS dt " +
-                     "FROM Transaction " +
-                     "WHERE card_id = {} ".format(selected_card) +
-                     "GROUP BY dt " +
-                     "ORDER BY dt")
-        print(query_str)
-        hours_share = query.get_table(query_str)
-
         query_str = ("SELECT YEAR(timestamp) AS t_year, WEEK(timestamp) AS t_week, SUM(total_amount) AS week_total " +
                      "FROM Transaction " +
                      "WHERE card_id = {} ".format(selected_card) +
@@ -407,6 +440,8 @@ def customer_stats():
 @app.route("/select", methods = ['GET', 'POST'])
 def select():
 
+    # Select a table to present and apply filters to data
+
     filters_dict = {}
     filters_dict['tables'] = ['Product', 'Store', 'Customer', 'Transaction']
     if request.method == 'GET':
@@ -420,6 +455,11 @@ def select():
 
 @app.route("/presentation", methods = ['POST'])
 def present():
+
+    # Presentation of a database table
+    # This function is responsible for reading a HTML form with filters (according to selected table),
+    # querying the database, and presenting the results as a table
+
     if request.method == 'POST':
         selected_table = request.form.get("select_table")
 
@@ -510,9 +550,9 @@ def present():
             selected_store = request.form.get("select_store")
             selected_city = request.form.get("select_city")
             if selected_store != None:
-                query_str = "SELECT * FROM Store WHERE store_id = {}".format(selected_store)
+                query_str = "SELECT * FROM Store WHERE store_name = '{}'".format(selected_store)
             elif selected_city != None:
-                query_str = "SELECT * FROM Store WHERE city = {}".format(selected_city)
+                query_str = "SELECT * FROM Store WHERE city = '{}'".format(selected_city)
             else:
                 query_str = "SELECT * FROM Store"
 
