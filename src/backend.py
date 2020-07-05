@@ -384,14 +384,13 @@ def customer_stats():
         print(query_str)
         visited_stores = query.get_table(query_str)
 
-        query_str = ("SELECT HOUR(timestamp) AS dt, SUM(total_amount) AS amount_per_dt, " +
-                     "SUM(total_amount) * 100.0 / SUM(SUM(total_amount)) OVER () AS share_per_dt " +
-                     "FROM Transaction "+
+        query_str = ("SELECT SUM(total_amount) * 100.0 / SUM(SUM(total_amount)) OVER () AS share_per_dt, HOUR(timestamp) AS dt " +
+                     "FROM Transaction " +
                      "WHERE card_id = {} ".format(selected_card) +
                      "GROUP BY dt " +
                      "ORDER BY dt")
         print(query_str)
-        visit_per_hour = query.get_table(query_str)
+        hours_share = query.get_table(query_str)
 
         query_str = ("SELECT YEAR(timestamp) AS t_year, WEEK(timestamp) AS t_week, SUM(total_amount) AS week_total " +
                      "FROM Transaction " +
@@ -420,10 +419,6 @@ def customer_stats():
         data_dict['stores']['table'] = visited_stores
         data_dict['stores']['headers'] = ['store ID', 'Store name']
 
-        data_dict['fav_hour'] = {}
-        data_dict['fav_hour']['table'] = visit_per_hour
-        data_dict['fav_hour']['headers'] = ['hour', 'Total amount per hour', 'share per hour']
-
         data_dict['week_avg'] = {}
         data_dict['week_avg']['table'] = week_average
         data_dict['week_avg']['headers'] = ['year', 'week', 'Week total']
@@ -432,6 +427,7 @@ def customer_stats():
         data_dict['month_avg']['table'] = month_average
         data_dict['month_avg']['headers'] = ['year', 'month', 'month total'] 
 
+        data_dict['fav_hour'] = {}
         data_dict['fav_hour']['table'] = hours_share
         data_dict['fav_hour']['headers'] = ['share', 'hour']
 
@@ -466,9 +462,11 @@ def present():
         if selected_table == "Transaction":
             selected_store = request.form.get("select_store")
             selected_payment = request.form.get("payment_method")
-            selected_date = request.form.get("shop_date")
+            selected_min_date = request.form.get("min_date")
+            selected_max_date = request.form.get("max_date")
             selected_tid = request.form.get("transaction_id")
-            selected_quantity = request.form.get("total_quantity")
+            selected_min_quantity = request.form.get("min_quantity")
+            selected_max_quantity = request.form.get("max_quantity")
             selected_min_price = request.form.get("min_price")
             selected_max_price = request.form.get("max_price")
 
@@ -480,14 +478,20 @@ def present():
                     query_arr.append("store_id = (SELECT store_id FROM Store WHERE store_name = '{}')".format(selected_store))
                 if selected_payment != None:
                     query_arr.append("payment_method = '{}'".format(selected_payment))
-                if selected_date != "":
-                    query_arr.append("timestamp like '{}%'".format(selected_date))
-                if selected_quantity != "":
-                    query_arr.append("total_pieces = {}".format(selected_quantity))
+                if selected_min_quantity != "":
+                    query_arr.append("total_pieces >= {}".format(selected_min_quantity))
+                if selected_max_quantity != "":
+                    query_arr.append("total_pieces <= {}".format(selected_max_quantity))
                 if selected_min_price != "":
                     query_arr.append("total_amount > {}".format(selected_min_price))
                 if selected_max_price != "":
                     query_arr.append("total_amount < {}".format(selected_max_price))
+                if selected_min_date != "" and selected_max_date != "":
+                    query_arr.append("timestamp BETWEEN '{}' AND '{}'".format(selected_min_date, selected_max_date))
+                elif selected_min_date != "":
+                    query_arr.append("timestamp like '{}%'".format(selected_min_date))
+                elif selected_max_date != "":
+                    query_arr.append("timestamp like '{}%'".format(selected_max_date))
 
                 if len(query_arr) > 1:
                     query_str = query_arr[0] + " WHERE "

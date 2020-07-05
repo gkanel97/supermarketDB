@@ -62,10 +62,14 @@
         <option value="cash">Cash</option>
         <option value="credit_card">Credit card</option>
     </select><br>
-    <label for="date_calender">Transaction date</label>
-    <input type="text" id="date_calender" name="shop_date" placeholder="YYYY-MM-DD"><br>
-    <label for="quantity_field">Total amount of pieces</label>
-    <input type="text" id="quantity_field" name="total_quantity"><br>
+    <label for="min_date_field">Transaction date range</label>
+    <input type="text" id="min_date_field" name="min_date" placeholder="Earliest date YYYY-MM-DD"><br>
+    <label for="max_date_field" style="visibility: hidden;">Max</label>
+    <input type="text" id="max_date_field" name="max_date" placeholder="Latest date YYYY-MM-DD"><br>
+    <label for="min_quantity_field">Total amount of pieces range</label>
+    <input type="text" id="min_quantity_field" name="min_quantity" placeholder="Minimum quantity"><br>
+    <label for="max_quantity_field" style="visibility: hidden;">Max</label>
+    <input type="text" id="max_quantity_field" name="max_quantity" placeholder="Maximum quantity"><br>
     <label for="min_price_field">Transaction amount range</label>
     <input type="text" id="min_price_field" name="min_price" placeholder="Minimum amount"><br>
     <label for="max_price_field" style="visibility: hidden;">Max</label>
