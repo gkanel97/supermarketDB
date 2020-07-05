@@ -1,8 +1,12 @@
 {% extends "layout.html" %}
 {% block page_title %}Price history{% endblock %}
+{% block js %}
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+{% endblock %}
 {% block head %}
   {{ super() }}
 {% endblock %}
+
 {% block text_title %}Price history as a timeseries{% endblock %}
 {% block main_part %}
 
@@ -10,7 +14,7 @@
 <div>
 <form method="POST" action="/price-history">
     <label for="barcode_input">Product barcode</label>
-    <input type="text" id="barcode_input" name="insert_barcode" placeholder="13-digit number" min_length="13" max_length="13"><br>
+    <input type="text" id="barcode_input" name="insert_barcode" placeholder="13-digit number"><br>
     <input class="btn" type="submit" value="Search">
 </form>
 </div>
